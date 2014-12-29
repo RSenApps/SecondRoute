@@ -23,6 +23,7 @@ android {
             storeFile file("secondroutekeystore.jks")
             storePassword System.getenv("pswd")
             keyAlias "secondroute"
+            
             keyPassword System.getenv("pswd")
         }
     }
