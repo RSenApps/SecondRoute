@@ -22,9 +22,15 @@ import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesClient;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.PendingResult;
+import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.Geofence;
-import com.google.android.gms.location.LocationClient;
+import com.google.android.gms.location.GeofencingRequest;
+import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
@@ -40,15 +46,16 @@ import java.util.Collections;
 
 
 public class SetAddressActivity extends Activity implements
-        GooglePlayServicesClient.ConnectionCallbacks,
-        com.google.android.gms.location.LocationListener,
-        GooglePlayServicesClient.OnConnectionFailedListener,
-        LocationClient.OnAddGeofencesResultListener, LocationClient.OnRemoveGeofencesResultListener, GoogleMap.OnMapClickListener {
+        GoogleApiClient.ConnectionCallbacks,
+        GoogleApiClient.OnConnectionFailedListener,
+        LocationListener,
+        GooglePlayServicesClient.OnConnectionFailedListener, GoogleMap.OnMapClickListener {
     boolean home;
-    LocationClient mLocationClient;
+    private GoogleApiClient mGoogleApiClient;
     GoogleMap map;
     double lat = 0;
     double lng = 0;
+    private PendingIntent mGeofencePendingIntent;
     String placeName;
     boolean followUser;
     @Override
@@ -82,7 +89,11 @@ public class SetAddressActivity extends Activity implements
             map.setMyLocationEnabled(true);
 
 
-            mLocationClient = new LocationClient(this, this, this);
+            mGoogleApiClient = new GoogleApiClient.Builder(this)
+                    .addApi(LocationServices.API)
+                    .addConnectionCallbacks(this)
+                    .addOnConnectionFailedListener(this)
+                    .build();
 
             findViewById(R.id.set).setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -115,7 +126,43 @@ public class SetAddressActivity extends Activity implements
                         {
                             key = "work";
                         }
-                        mLocationClient.removeGeofences(Collections.singletonList(key), SetAddressActivity.this);
+                        PendingResult<Status> result = LocationServices.GeofencingApi.removeGeofences(mGoogleApiClient, Collections.singletonList(key));
+                        result.setResultCallback(new ResultCallback<Status>() {
+                            @Override
+                            public void onResult(Status status) {
+                                if (status.isSuccess()) {
+                                    ArrayList<Geofence> geofences = new ArrayList<Geofence>();
+                                    String key = "home";
+                                    if (!home)
+                                    {
+                                        key = "work";
+                                    }
+
+                                    geofences.add(new SimpleGeofence(key, lat, lng, Geofence.GEOFENCE_TRANSITION_ENTER | Geofence.GEOFENCE_TRANSITION_EXIT).toGeofence());
+
+                                    Intent i = new Intent(SetAddressActivity.this, ContextService.class);
+                                    i.putExtra("home", home);
+                                    PendingIntent intent = PendingIntent.getService(SetAddressActivity.this, 0, i, 0);
+                                    PendingResult<Status> result = LocationServices.GeofencingApi.addGeofences(mGoogleApiClient, geofences, intent);
+                                    result.setResultCallback(new ResultCallback<Status>() {
+                                        @Override
+                                        public void onResult(Status status) {
+                                            if (status.isSuccess()) {
+                                                // Successfully registered
+                                                Toast.makeText(SetAddressActivity.this, "Geofence creation succeeded, SecondRoute will now run when you leave this location", Toast.LENGTH_LONG).show();
+                                                finish();
+                                            }   else{
+                                                    Toast.makeText(SetAddressActivity.this, "Geofence creation failed, please try again later...", Toast.LENGTH_LONG).show();
+                                                }
+                                            }
+
+                                    });
+                                } else {
+                                    // No recovery. Weep softly or inform the user.
+                                   Toast.makeText(SetAddressActivity.this, "Geofence creation failed, please try again later...", Toast.LENGTH_LONG).show();
+                                }
+                            }
+                        });
                         // Send a request to add the current geofences
 
 
@@ -131,7 +178,7 @@ public class SetAddressActivity extends Activity implements
     {
         super.onStart();
         // Connect the client.
-        mLocationClient.connect();
+        mGoogleApiClient.connect();
     }
 
     /*
@@ -141,15 +188,19 @@ public class SetAddressActivity extends Activity implements
     protected void onStop()
     {
         // Disconnecting the client invalidates it.
-        mLocationClient.disconnect();
+        mGoogleApiClient.disconnect();
         super.onStop();
     }
 
     @Override
     public void onConnected(Bundle dataBundle)
     {
-        Location location = mLocationClient.getLastLocation();
-        mLocationClient.requestLocationUpdates(LocationRequest.create().setExpirationDuration(3000), this);
+        Location location = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+        LocationRequest mLocationRequest = LocationRequest.create();
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        mLocationRequest.setInterval(1000);
+        mLocationRequest.setExpirationTime(5000);
+        LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
         if (lat == 0 || lng == 0) {
             map.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(location.getLatitude(), location.getLongitude())));
         }
@@ -163,7 +214,7 @@ public class SetAddressActivity extends Activity implements
         map.animateCamera(CameraUpdateFactory.zoomTo(12));
 
         final AutoCompleteTextView autoCompView = (AutoCompleteTextView) findViewById(R.id.location_input);
-        final PlacesAutoCompleteAdapter adapter = new PlacesAutoCompleteAdapter(this, mLocationClient, android.R.layout.simple_list_item_1);
+        final PlacesAutoCompleteAdapter adapter = new PlacesAutoCompleteAdapter(this, mGoogleApiClient, android.R.layout.simple_list_item_1);
         autoCompView.setAdapter(adapter);
         autoCompView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -212,18 +263,27 @@ public class SetAddressActivity extends Activity implements
      * Called by Location Services if the connection to the
      * location client drops because of an error.
      */
-    @Override
-    public void onDisconnected()
-    {
-    }
+
 
     /*
      * Called by Location Services if the attempt to
      * Location Services fails.
      */
+
+    /**
+     * -------------------- All Geofencing Code ---------------------------------------
+     *
+     * */
+
+
+
+    @Override
+    public void onConnectionSuspended(int i) {
+    }
+
     @Override
     public void onConnectionFailed(ConnectionResult connectionResult) {
-        /*
+         /*
          * Google Play services can resolve some errors it detects.
          * If the error has a resolution, try sending an Intent to
          * start a Google Play services activity that can resolve
@@ -251,43 +311,6 @@ public class SetAddressActivity extends Activity implements
             Toast.makeText(this, connectionResult.getErrorCode(), Toast.LENGTH_LONG).show();
         }
     }
-
-    /**
-     * -------------------- All Geofencing Code ---------------------------------------
-     *
-     * */
-
-    @Override
-    public void onAddGeofencesResult(int i, String[] strings)
-    {
-        finish();
-        // Completed Added Geofencing
-    }
-
-    @Override
-    public void onRemoveGeofencesByRequestIdsResult(int i3, String[] strings) {
-        ArrayList<Geofence> geofences = new ArrayList<Geofence>();
-        String key = "home";
-        if (!home)
-        {
-            key = "work";
-        }
-
-        geofences.add(new SimpleGeofence(key, lat, lng, Geofence.GEOFENCE_TRANSITION_ENTER | Geofence.GEOFENCE_TRANSITION_EXIT).toGeofence());
-
-        Intent i = new Intent(SetAddressActivity.this, ContextService.class);
-        i.putExtra("home", home);
-        PendingIntent intent = PendingIntent.getService(SetAddressActivity.this, 0, i, 0);
-
-        mLocationClient.addGeofences(
-                geofences, intent, SetAddressActivity.this);
-    }
-
-    @Override
-    public void onRemoveGeofencesByPendingIntentResult(int i, PendingIntent pendingIntent) {
-
-    }
-
     @Override
     public void onMapClick(LatLng latLng) {
         lat = latLng.latitude;

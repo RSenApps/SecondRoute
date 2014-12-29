@@ -5,16 +5,16 @@ import android.widget.ArrayAdapter;
 import android.widget.Filter;
 import android.widget.Filterable;
 
-import com.google.android.gms.location.LocationClient;
+import com.google.android.gms.common.api.GoogleApiClient;
 
 /**
  * Created by Ryan on 9/20/2014.
  */
 public class PlacesAutoCompleteAdapter extends ArrayAdapter<String> implements Filterable {
     private String[][] resultList;
-    private LocationClient mLocationClient;
+    private GoogleApiClient mLocationClient;
 
-    public PlacesAutoCompleteAdapter(Context context, LocationClient mLocationClient, int textViewResourceId) {
+    public PlacesAutoCompleteAdapter(Context context, GoogleApiClient mLocationClient, int textViewResourceId) {
         super(context, textViewResourceId);
         this.mLocationClient = mLocationClient;
     }

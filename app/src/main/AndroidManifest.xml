@@ -30,10 +30,11 @@
         </activity>
         <activity
             android:name=".SetAddressActivity"
-            android:label="Set Address"  android:parentActivityName=".MainActivity" >
+            android:label="Set Address"
+            android:parentActivityName=".MainActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="rsjz.com.secondroute.MainActivity" />
+                android:value="rsen.com.secondroute.MainActivity" />
         </activity>
 
         <meta-data
@@ -59,7 +60,7 @@
             android:parentActivityName=".MainActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="rsjz.com.secondroute.MainActivity" />
+                android:value="rsen.com.secondroute.MainActivity" />
         </activity>
         <activity
             android:name=".FasterRouteActivity"
@@ -71,7 +72,15 @@
             android:enabled="true"
             android:exported="false" >
         </service>
-        <meta-data android:name="com.crashlytics.ApiKey" android:value="eb7953bfff80cd7f28240687400a7a7e5d6da75f"/>
+
+        <meta-data
+            android:name="com.crashlytics.ApiKey"
+            android:value="eb7953bfff80cd7f28240687400a7a7e5d6da75f" />
+
+        <service
+            android:name=".ReceiveGeofenceTransitionService"
+            android:exported="false" >
+        </service>
     </application>
 
 </manifest>

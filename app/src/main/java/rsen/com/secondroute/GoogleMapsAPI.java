@@ -6,7 +6,8 @@ import android.location.Location;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
-import com.google.android.gms.location.LocationClient;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.model.LatLng;
 
 import org.json.JSONArray;
@@ -72,7 +73,7 @@ public class GoogleMapsAPI {
         return resultLocation;
     }
 
-    public static String[][] autocomplete(String input, LocationClient mLocationClient) {
+    public static String[][] autocomplete(String input, GoogleApiClient mLocationClient) {
         String[][] resultList = null;
 
         HttpURLConnection conn = null;
@@ -80,7 +81,7 @@ public class GoogleMapsAPI {
         try {
             StringBuilder sb = new StringBuilder(PLACES_API_BASE + TYPE_AUTOCOMPLETE + OUT_JSON);
             sb.append("?key=" + API_KEY);
-            Location location = mLocationClient.getLastLocation();
+            Location location = LocationServices.FusedLocationApi.getLastLocation(mLocationClient);
             sb.append("&location=" + location.getLatitude() + "," + location.getLongitude());
             sb.append("&input=" + URLEncoder.encode(input, "utf8"));
 

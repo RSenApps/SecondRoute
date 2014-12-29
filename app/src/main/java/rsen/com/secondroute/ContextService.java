@@ -1,28 +1,30 @@
 package rsen.com.secondroute;
 
-import android.app.Service;
-import android.content.Context;
 import android.content.Intent;
 import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.widget.Toast;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.Geofence;
-import com.google.android.gms.location.LocationClient;
-
-import java.util.List;
+import com.google.android.gms.location.LocationListener;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
 
 
 /**
  * Handles Geofencing and running of BackgroundService
  */
-public class ContextService extends Service implements LocationListener
+public class ContextService extends ReceiveGeofenceTransitionService implements
+        GoogleApiClient.ConnectionCallbacks,
+        GoogleApiClient.OnConnectionFailedListener,
+        LocationListener
 {
     public static boolean isHeadingHome;
-    LocationManager locationManager;
+    private GoogleApiClient mGoogleApiClient;
+
     float currentLat = 0;
     float currentLng = 0;
     long lastRun = 0;
@@ -35,6 +37,7 @@ public class ContextService extends Service implements LocationListener
     public void onDestroy()
     {
         stopActiveTracking();
+        mGoogleApiClient.disconnect();
         super.onDestroy();
     }
 
@@ -45,24 +48,30 @@ public class ContextService extends Service implements LocationListener
         currentLng = 0;
         lastRun = 0;
         isHeadingHome = !intent.getBooleanExtra("home", true); //exited home geofence
-        locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
+                .addApi(LocationServices.API)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .build();
+        return super.onStartCommand(intent, flags, startId);
+    }
 
-        int transitionType = LocationClient.getGeofenceTransition(intent);
-        // Test that a valid transition was reported
-        if ((transitionType == Geofence.GEOFENCE_TRANSITION_ENTER))
-        {
-            Toast.makeText(this, "Geofence entered. Stopping background service...", Toast.LENGTH_SHORT).show();
-            MyLog.l("Geofence entered. Stopping background service...", this);
-            stopActiveTracking();
-            stopSelf();
-        }
-        else // exited
-        {
-            Toast.makeText(this, "Geofence exited. Active tracking started... acquiring gps signal...", Toast.LENGTH_SHORT).show();
-            MyLog.l("Geofence exited. Active tracking started... acquiring gps signal...", this);
+    @Override
+    protected void onEnteredGeofences(String[] geofenceIds) {
+        Toast.makeText(this, "Geofence entered. Stopping background service...", Toast.LENGTH_SHORT).show();
+        MyLog.l("Geofence entered. Stopping background service...", this);
+        stopActiveTracking();
+        stopSelf();
+    }
 
-            // Check direction
-            startActiveTracking();
+    @Override
+    protected void onExitedGeofences(String[] geofenceIds) {
+        Toast.makeText(this, "Geofence exited. Active tracking started... acquiring gps signal...", Toast.LENGTH_SHORT).show();
+        MyLog.l("Geofence entered. Stopping background service...", this);
+
+        // Check direction
+        startActiveTracking();
+            /*
             Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
             if (location.hasAccuracy())
             {
@@ -72,17 +81,25 @@ public class ContextService extends Service implements LocationListener
 
                 startIntentService();
             }
-        }
-
-        return super.onStartCommand(intent, flags, startId);
+            */
     }
+
+    @Override
+    protected void onError(int errorCode) {
+
+    }
+
     public void startActiveTracking()
     {
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
+
+        LocationRequest mLocationRequest = LocationRequest.create();
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+
+        LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
     }
     public void stopActiveTracking()
     {
-        locationManager.removeUpdates(this);
+        LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
     }
     @Override
     public IBinder onBind(Intent intent)
@@ -111,10 +128,22 @@ public class ContextService extends Service implements LocationListener
 
         startIntentService();
     }
+    @Override
+    public void onConnected(Bundle bundle) {
 
-    public void onStatusChanged(String provider, int status, Bundle extras) {}
+        LocationRequest mLocationRequest = LocationRequest.create();
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        mLocationRequest.setInterval(1000); // Update location every second
 
-    public void onProviderEnabled(String provider) {}
+        LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
+    }
 
-    public void onProviderDisabled(String provider) {}
+    @Override
+    public void onConnectionSuspended(int i) {
+    }
+
+    @Override
+    public void onConnectionFailed(ConnectionResult connectionResult) {
+    }
+
 }
