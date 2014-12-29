@@ -12,7 +12,7 @@ dependencies:
     - ./gradlew dependencies --info
 test:
   override:
-    - ./gradlew assembleRelease crashlyticsUploadDistributionRelease -PdisablePreDex
+    - ./gradlew assembleRelease crashlyticsUploadDistributionRelease -PdisablePreDex --debug
 general:
   artifacts:
     - "app/build/outputs/apk/app-release.apk" # relative to the build directory
