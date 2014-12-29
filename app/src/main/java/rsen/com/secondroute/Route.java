@@ -1,4 +1,4 @@
-package rsjz.com.secondroute;
+package rsen.com.secondroute;
 
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;

@@ -1,4 +1,4 @@
-package rsjz.com.secondroute;
+package rsen.com.secondroute;
 
 import android.app.IntentService;
 import android.content.Intent;
