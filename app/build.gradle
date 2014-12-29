@@ -5,7 +5,7 @@ android {
     buildToolsVersion "21.0.1"
 
     defaultConfig {
-        applicationId "rsen.com.secondroute"
+        applicationId "rsjz.com.secondroute"
         minSdkVersion 16
         targetSdkVersion 21
         versionCode 1
