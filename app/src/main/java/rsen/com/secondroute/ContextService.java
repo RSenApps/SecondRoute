@@ -52,13 +52,14 @@ public class ContextService extends Service implements LocationListener
         if ((transitionType == Geofence.GEOFENCE_TRANSITION_ENTER))
         {
             Toast.makeText(this, "Geofence entered. Stopping background service...", Toast.LENGTH_SHORT).show();
-
+            MyLog.l("Geofence entered. Stopping background service...", this);
             stopActiveTracking();
             stopSelf();
         }
         else // exited
         {
             Toast.makeText(this, "Geofence exited. Active tracking started... acquiring gps signal...", Toast.LENGTH_SHORT).show();
+            MyLog.l("Geofence exited. Active tracking started... acquiring gps signal...", this);
 
             // Check direction
             startActiveTracking();

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="rsjz.com.secondroute" >
+    package="rsen.com.secondroute" >
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
@@ -71,6 +71,7 @@
             android:enabled="true"
             android:exported="false" >
         </service>
+        <meta-data android:name="com.crashlytics.ApiKey" android:value="eb7953bfff80cd7f28240687400a7a7e5d6da75f"/>
     </application>
 
 </manifest>

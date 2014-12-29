@@ -16,6 +16,7 @@ import android.widget.Scroller;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.crashlytics.android.Crashlytics;
 import com.google.android.gms.location.LocationClient;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -23,6 +24,8 @@ import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.PolylineOptions;
+
+import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -35,6 +38,8 @@ public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        Crashlytics.start(this);
         setContentView(R.layout.activity_main);
         findViewById(R.id.home_layout).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -196,6 +201,7 @@ public class MainActivity extends Activity {
             rectOptions.width(20);
             map.addPolyline(rectOptions);
         }
+
     }
 
     @Override
@@ -204,6 +210,7 @@ public class MainActivity extends Activity {
         final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         ((TextView)findViewById(R.id.home_address)).setText(prefs.getString("home_address", "unset").split(",")[0]);
         ((TextView)findViewById(R.id.work_address)).setText(prefs.getString("work_address", "unset").split(",")[0]);
+        ((TextView)findViewById(R.id.log)).setText(MyLog.getLog(this));
         setupMaps();
         //((TextView)findViewById(R.id.preferred_route)).setText("Preferred Route to Work: " + prefs.getString("preferredRouteWork", "unset"));
         //((TextView)findViewById(R.id.preferred_route_home)).setText("Preferred Route to Home: " + prefs.getString("preferredRouteHome", "unset"));

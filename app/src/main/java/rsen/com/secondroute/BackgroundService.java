@@ -52,18 +52,24 @@ public class BackgroundService extends IntentService
         for (Route route : pr)
         {
             double confidenceScore = compareRoutes(route.instructions, cr);
+            MyLog.l("Route confidence: " + confidenceScore, this);
             if (confidenceScore > maxConfidenceScore)
             {
                 maxConfidenceScore = confidenceScore;
                 routeWithMaxConfidence = route;
             }
         }
+        MyLog.l("Max confidence (>.8): " + maxConfidenceScore, this);
+
         if (maxConfidenceScore > .8) { //need to find match with original route, but also the fastest route can't be the original
             final double similarityScore = compareRoutes(pr.get(0).instructions, cr);
+            MyLog.l("Similarity score (<.9): " + similarityScore, this);
+
             if (similarityScore < .9) {
                 Intent i = new Intent(this, FasterRouteActivity.class);
                 i.putExtra("instruction", pr.get(0).instructions.get(0));
                 i.putExtra("differenceInTime", routeWithMaxConfidence.durationMinutes - pr.get(0).durationMinutes);
+                MyLog.l("Difference in Time: " + (routeWithMaxConfidence.durationMinutes - pr.get(0).durationMinutes), this);
                 i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 startActivity(i);
                 Intent service = new Intent(this, ContextService.class);
