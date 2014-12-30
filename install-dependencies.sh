@@ -26,7 +26,6 @@ if [ ! -e $DEPS ]; then
   echo y | android update sdk -u -a -t extra-android-m2repository &&
   echo y | android update sdk -u -a -t extra-android-support &&
   echo y | android update sdk -u -a -t extra-google-m2repository &&
-  echo y | android update sdk --no-ui &&
 
   # DO NOT CREATE EMULATOR FOR THE MOMENT
   # echo n | android create avd -n testing -f -t android-21 &&
