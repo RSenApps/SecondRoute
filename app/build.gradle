@@ -14,7 +14,6 @@ repositories {
     maven { url 'http://download.crashlytics.com/maven' }
 }
 
-ext.betaDistributionEmails="ryanmsen@gmail.com"
 android {
     compileSdkVersion 21
     buildToolsVersion "21.1.2"
@@ -36,6 +35,7 @@ android {
     }
     buildTypes {
         release {
+            ext.betaDistributionEmails="ryanmsen@gmail.com"
             minifyEnabled false
             signingConfig signingConfigs.release
         }
