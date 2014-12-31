@@ -17,7 +17,9 @@ android list sdk -e
 if [ ! -e $DEPS ]; then
 
   cp -r /usr/local/android-sdk-linux $ANDROID_HOME &&
-
+	export PATH="$ANDROID_HOME/platform-tools:$ANDROID_HOME/tools:$PATH" &&
+	which android &&
+	
   echo y | android update sdk -u -a -t platform-tools &&
   echo y | android update sdk -u -a -t tools &&
   echo y | android update sdk -u -a -t android-21 &&
