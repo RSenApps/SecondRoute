@@ -56,6 +56,8 @@ public class ContextService extends ReceiveGeofenceTransitionService implements
         return super.onStartCommand(intent, flags, startId);
     }
 
+
+
     @Override
     protected void onEnteredGeofences(String[] geofenceIds) {
         Toast.makeText(this, "Geofence entered. Stopping background service...", Toast.LENGTH_SHORT).show();
@@ -88,17 +90,15 @@ public class ContextService extends ReceiveGeofenceTransitionService implements
     protected void onError(int errorCode) {
 
     }
-
+    boolean startOrStopTracking = true;
     public void startActiveTracking()
     {
-
-        LocationRequest mLocationRequest = LocationRequest.create();
-        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-
-        LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
+        startOrStopTracking = true;
+        mGoogleApiClient.connect();
     }
     public void stopActiveTracking()
     {
+        startOrStopTracking = false;
         LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
     }
     @Override
@@ -130,12 +130,16 @@ public class ContextService extends ReceiveGeofenceTransitionService implements
     }
     @Override
     public void onConnected(Bundle bundle) {
+        if (startOrStopTracking) {
+            LocationRequest mLocationRequest = LocationRequest.create();
+            mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+            mLocationRequest.setInterval(1000); // Update location every second
 
-        LocationRequest mLocationRequest = LocationRequest.create();
-        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-        mLocationRequest.setInterval(1000); // Update location every second
-
-        LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
+            LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
+        }
+        else {
+            LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
+        }
     }
 
     @Override
