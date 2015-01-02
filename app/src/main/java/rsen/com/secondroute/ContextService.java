@@ -99,7 +99,7 @@ public class ContextService extends ReceiveGeofenceTransitionService implements
     public void stopActiveTracking()
     {
         startOrStopTracking = false;
-        LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
+        mGoogleApiClient.connect();
     }
     @Override
     public IBinder onBind(Intent intent)
@@ -124,7 +124,7 @@ public class ContextService extends ReceiveGeofenceTransitionService implements
     {
         currentLat = (float) location.getLatitude();
         currentLng = (float) location.getLongitude();
-        Toast.makeText(this, "location lock acquired. lat=" + currentLat + " lng=" + currentLng, Toast.LENGTH_SHORT).show();
+        //Toast.makeText(this, "location lock acquired. lat=" + currentLat + " lng=" + currentLng, Toast.LENGTH_SHORT).show();
 
         startIntentService();
     }

@@ -47,7 +47,7 @@
         <service
             android:name=".ContextService"
             android:enabled="true"
-            android:exported="false" >
+            android:exported="true" >
         </service>
         <service
             android:name=".BackgroundService"
@@ -76,11 +76,6 @@
         <meta-data
             android:name="com.crashlytics.ApiKey"
             android:value="eb7953bfff80cd7f28240687400a7a7e5d6da75f" />
-
-        <service
-            android:name=".ReceiveGeofenceTransitionService"
-            android:exported="false" >
-        </service>
     </application>
 
 </manifest>
