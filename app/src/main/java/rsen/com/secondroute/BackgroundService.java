@@ -66,14 +66,19 @@ public class BackgroundService extends IntentService
             MyLog.l("Similarity score (<.9): " + similarityScore, this);
 
             if (similarityScore < .9) {
-                Intent i = new Intent(this, FasterRouteActivity.class);
-                i.putExtra("instruction", pr.get(0).instructions.get(0));
-                i.putExtra("differenceInTime", routeWithMaxConfidence.durationMinutes - pr.get(0).durationMinutes);
-                MyLog.l("Difference in Time: " + (routeWithMaxConfidence.durationMinutes - pr.get(0).durationMinutes), this);
-                i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                startActivity(i);
-                Intent service = new Intent(this, ContextService.class);
-                stopService(service);
+                int timeDifference = routeWithMaxConfidence.durationMinutes - pr.get(0).durationMinutes;
+                int minDifference = PreferenceManager.getDefaultSharedPreferences(this).getInt("minDifference", 5);
+                MyLog.l("Difference in Time: " + timeDifference, this);
+
+                if (timeDifference >= minDifference) {
+                    Intent i = new Intent(this, FasterRouteActivity.class);
+                    i.putExtra("instruction", pr.get(0).instructions.get(0));
+                    i.putExtra("differenceInTime", routeWithMaxConfidence.durationMinutes - pr.get(0).durationMinutes);
+                    i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(i);
+                    Intent service = new Intent(this, ContextService.class);
+                    stopService(service);
+                }
             }
             else {
                 mHandler.post(new Runnable() {

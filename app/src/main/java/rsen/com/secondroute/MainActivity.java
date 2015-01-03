@@ -13,6 +13,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ScrollView;
 import android.widget.Scroller;
+import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -57,28 +58,26 @@ public class MainActivity extends Activity {
                 startActivity(i);
             }
         });
+        final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        SeekBar minDifference = ((SeekBar) findViewById(R.id.minDifference));
+        final TextView minDifferenceDisplay = (TextView) findViewById(R.id.minDifferenceDisplay);
+        minDifference.setProgress(prefs.getInt("minDifference", 5));
+        minDifference.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                int value = progress + 2; // min value is 2
+                prefs.edit().putInt("minDifference", value).apply();
+                minDifferenceDisplay.setText(value + " min");
+            }
 
-        findViewById(R.id.test_exit_geofence).setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view) {
-                Intent i = new Intent(MainActivity.this, ContextService.class);
-                startService(i);
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
             }
-        });
-        findViewById(R.id.test_enter_geofence).setOnClickListener(new View.OnClickListener() {
+
             @Override
-            public void onClick(View view) {
-                Intent i = new Intent(MainActivity.this, ContextService.class);
-                stopService(i);
-            }
-        });
-        findViewById(R.id.test_difference_traffic).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent i = new Intent(MainActivity.this, FasterRouteActivity.class);
-                i.putExtra("instruction", "Turn right onto the ramp of I-5");
-                i.putExtra("differenceInTime", 12);
-                startActivity(i);
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
             }
         });
     }

@@ -110,7 +110,7 @@ public class ContextService extends ReceiveGeofenceTransitionService implements
 
     private void startIntentService()
     {
-        if (currentLat != 0 && currentLng != 0 && System.currentTimeMillis() - lastRun > 60000)
+        if (currentLat != 0 && currentLng != 0 && System.currentTimeMillis() - lastRun > 50000)
         {
             lastRun = System.currentTimeMillis();
             Intent compareResults = new Intent(this, BackgroundService.class);
@@ -133,7 +133,7 @@ public class ContextService extends ReceiveGeofenceTransitionService implements
         if (startOrStopTracking) {
             LocationRequest mLocationRequest = LocationRequest.create();
             mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-            mLocationRequest.setInterval(1000); // Update location every second
+            mLocationRequest.setInterval(60000); // Update location every second
 
             LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
         }

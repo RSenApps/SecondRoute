@@ -174,26 +174,51 @@
 
                 </RelativeLayout>
             </android.support.v7.widget.CardView>
-            <Button
-                android:layout_width="match_parent"
-                android:id="@+id/test_exit_geofence"
-                android:text="Test: Exit Geofence"
-                android:textColor="@android:color/white"
-                android:layout_height="wrap_content" />
-            <Button
-                android:layout_width="match_parent"
-                android:id="@+id/test_enter_geofence"
-                android:textColor="@android:color/white"
 
-                android:text="Test: Enter Geofence"
-                android:layout_height="wrap_content" />
-            <Button
-                android:layout_width="match_parent"
-                android:id="@+id/test_difference_traffic"
-                android:textColor="@android:color/white"
+            <android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+                android:orientation="horizontal" android:layout_width="match_parent"
+                xmlns:card_view="http://schemas.android.com/apk/res-auto"
+                android:layout_margin="5dp"
+                card_view:cardCornerRadius="5dp"
+                android:layout_height="wrap_content">
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_margin="10dp"
+                    android:layout_height="match_parent">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="@android:style/TextAppearance.Large"
+                        android:id="@+id/minDifferenceTitle"
+                        android:text="Minimum Time Saved" />
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginTop ="5dp"
+                        android:layout_marginBottom="10dp"
+                        android:id="@+id/divider4"
+                        android:layout_below="@id/minDifferenceTitle"
+                        android:background="@android:color/darker_gray"/>
 
-                android:text="Test: Difference in Traffic Found"
-                android:layout_height="wrap_content" />
+                    <SeekBar
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@id/divider4"
+                        android:max="58"
+
+                        android:id="@+id/minDifference" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_centerHorizontal="true"
+                        android:layout_below="@id/minDifference"
+                        android:id="@+id/minDifferenceDisplay"
+                        android:text="5 min"
+                        android:layout_height="wrap_content" />
+
+                </RelativeLayout>
+
+
+            </android.support.v7.widget.CardView>
 
             <TextView
                 android:layout_width="wrap_content"
