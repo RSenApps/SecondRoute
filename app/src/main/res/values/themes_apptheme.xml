@@ -3,16 +3,15 @@
 <!-- Generated with http://android-holo-colors.com -->
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
 
-  <style name="AppTheme" parent="@style/_AppTheme"/>
 
-  <style name="_AppTheme" parent="android:Theme.Holo.Light.DarkActionBar">
+    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+        <!-- Set AppCompat’s actionBarStyle -->
 
-    <item name="android:autoCompleteTextViewStyle">@style/AutoCompleteTextViewAppTheme</item>
+        <!-- Set AppCompat’s color theming attrs -->
+        <item name="colorPrimary">#F44336</item>
+    <item name="colorPrimaryDark">#B71C1C</item>
 
-    <item name="android:buttonStyle">@style/ButtonAppTheme</item>
-
-    <item name="android:imageButtonStyle">@style/ImageButtonAppTheme</item>
-
-  </style>
+    <!-- The rest of your attributes -->
+    </style>
 
 </resources>
