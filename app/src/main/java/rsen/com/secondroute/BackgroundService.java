@@ -114,6 +114,7 @@ public class BackgroundService extends IntentService
             }
             else
             {
+                MyLog.l("Failed to match on: Preffered: " + _pr.get(_pr.size()-i) + " Current: " + _cr.get(_cr.size()-i), this);
                 return matchpercentage / Math.min(_pr.size(), _cr.size());
             }
         }
