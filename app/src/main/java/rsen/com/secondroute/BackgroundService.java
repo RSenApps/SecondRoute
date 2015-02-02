@@ -9,7 +9,11 @@ import android.preference.PreferenceManager;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 /**
  * An {@link IntentService} subclass for handling asynchronous task requests in
@@ -101,6 +105,9 @@ public class BackgroundService extends IntentService
         }
     }
 
+    Set<String> ignoreWords = new HashSet<String>(Arrays.asList(
+            new String[]{"depart", "turn", "onto", "keep", "take" , "for", "at"}
+    ));
 
 
     private double compareRoutes(List<String> _pr, List<String> _cr)
@@ -108,7 +115,26 @@ public class BackgroundService extends IntentService
         double matchpercentage = 0.0;
         for(int i = 1; i <= Math.min(_pr.size(), _cr.size()) ; i++) // i starts at 0, ends at smaller number
         {
-            if(_pr.get(_pr.size() - i).equals(_cr.get(_cr.size()-i))   )   // begins at end of list and minus i to iterate
+            boolean match = true;
+            List<String> preferredRouteWords = Arrays.asList(_pr.get(_pr.size() - i).split(" "));
+            List<String> currentRouteWords = Arrays.asList(_cr.get(_cr.size() - i).split(" "));
+           removeIgnoreWords(preferredRouteWords);
+            removeIgnoreWords(currentRouteWords);
+            if (preferredRouteWords.size() != currentRouteWords.size())
+            {
+                match = false;
+            }
+            else {
+                for (int w = 0; w < preferredRouteWords.size(); w++) {
+
+                        if (!preferredRouteWords.get(w).toLowerCase().equals(currentRouteWords.get(w).toLowerCase())) {
+                            match = false;
+                            break;
+                        }
+
+                }
+            }
+            if(match)   // begins at end of list and minus i to iterate
             {
                 matchpercentage++;
             }
@@ -119,5 +145,17 @@ public class BackgroundService extends IntentService
             }
         }
         return matchpercentage / Math.min(_pr.size(), _cr.size());
+    }
+    private void removeIgnoreWords(List<String> words)
+    {
+        Iterator<String> prIterator = words.iterator();
+        while (prIterator.hasNext())
+        {
+            String word = prIterator.next();
+            if (ignoreWords.contains(word))
+            {
+                prIterator.remove();
+            }
+        }
     }
 }

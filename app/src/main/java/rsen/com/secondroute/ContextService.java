@@ -47,7 +47,7 @@ public class ContextService extends ReceiveGeofenceTransitionService implements
         currentLat = 0;
         currentLng = 0;
         lastRun = 0;
-        isHeadingHome = !intent.getBooleanExtra("home", true); //exited home geofence
+        //isHeadingHome = !intent.getBooleanExtra("home", true); //exited home geofence
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .addApi(LocationServices.API)
                 .addConnectionCallbacks(this)
@@ -67,9 +67,26 @@ public class ContextService extends ReceiveGeofenceTransitionService implements
 
     @Override
     protected void onExitedGeofences(String[] geofenceIds) {
-        Toast.makeText(this, "Geofence exited. Active tracking started... acquiring gps signal...", Toast.LENGTH_SHORT).show();
-        MyLog.l("Geofence entered. Stopping background service...", this);
 
+        isHeadingHome = false;
+        for (int i = 0; i < geofenceIds.length; i++)
+        {
+            if (geofenceIds[i].toLowerCase().equals("work"))
+            {
+                isHeadingHome = true;
+                break;
+            }
+        }
+        String message = "Geofence exited: ";
+        if (isHeadingHome)
+        {
+            message += "work";
+        }
+        else {
+            message += "home";
+        }
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+        MyLog.l(message, this);
         // Check direction
         startActiveTracking();
             /*
