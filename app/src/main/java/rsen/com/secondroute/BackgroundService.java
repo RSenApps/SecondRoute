@@ -30,8 +30,8 @@ public class BackgroundService extends IntentService
     Handler mHandler;
     @Override
     public void onCreate() {
-        super.onCreate();
         Crashlytics.start(this);
+        super.onCreate();
         mHandler = new Handler();
     }
 
@@ -68,11 +68,11 @@ public class BackgroundService extends IntentService
         }
         MyLog.l("Max confidence (>.8): " + maxConfidenceScore, this);
 
-        if (maxConfidenceScore > .8) { //need to find match with original route, but also the fastest route can't be the original
+        if (maxConfidenceScore >= .8) { //need to find match with original route, but also the fastest route can't be the original
             final double similarityScore = compareRoutes(pr.get(0).instructions, cr);
             MyLog.l("Similarity score (<.9): " + similarityScore, this);
 
-            if (similarityScore < .9) {
+            if (similarityScore <= .9) {
                 int timeDifference = routeWithMaxConfidence.durationMinutes - pr.get(0).durationMinutes;
                 int minDifference = PreferenceManager.getDefaultSharedPreferences(this).getInt("minDifference", 5);
                 MyLog.l("Difference in Time: " + timeDifference, this);
@@ -119,8 +119,8 @@ public class BackgroundService extends IntentService
         for(int i = 1; i <= Math.min(_pr.size(), _cr.size()) ; i++) // i starts at 0, ends at smaller number
         {
             boolean match = true;
-            List<String> preferredRouteWords = Arrays.asList(_pr.get(_pr.size() - i).split(" "));
-            List<String> currentRouteWords = Arrays.asList(_cr.get(_cr.size() - i).split(" "));
+            List<String> preferredRouteWords = new ArrayList(Arrays.asList(_pr.get(_pr.size() - i).split(" ")));
+            List<String> currentRouteWords = new ArrayList(Arrays.asList(_cr.get(_cr.size() - i).split(" ")));
            removeIgnoreWords(preferredRouteWords);
             removeIgnoreWords(currentRouteWords);
             if (preferredRouteWords.size() != currentRouteWords.size())
@@ -144,7 +144,7 @@ public class BackgroundService extends IntentService
             else
             {
                 MyLog.l("Failed to match on: Preffered: " + _pr.get(_pr.size()-i) + " Current: " + _cr.get(_cr.size()-i), this);
-                return matchpercentage / Math.min(_pr.size(), _cr.size());
+                return (matchpercentage+1) / Math.min(_pr.size(), _cr.size()); // Going to give it the last one because of different wording of directions (+1)
             }
         }
         return matchpercentage / Math.min(_pr.size(), _cr.size());
