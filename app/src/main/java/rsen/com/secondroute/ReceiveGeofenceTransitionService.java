@@ -4,6 +4,7 @@ import android.app.IntentService;
 import android.app.Service;
 import android.content.Intent;
 
+import com.crashlytics.android.Crashlytics;
 import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofencingEvent;
 
@@ -22,6 +23,7 @@ public abstract class ReceiveGeofenceTransitionService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        Crashlytics.start(this);
         GeofencingEvent event = GeofencingEvent.fromIntent(intent);
         if (event != null) {
 

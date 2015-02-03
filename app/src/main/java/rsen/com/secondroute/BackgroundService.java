@@ -8,6 +8,8 @@ import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.widget.Toast;
 
+import com.crashlytics.android.Crashlytics;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -29,6 +31,7 @@ public class BackgroundService extends IntentService
     @Override
     public void onCreate() {
         super.onCreate();
+        Crashlytics.start(this);
         mHandler = new Handler();
     }
 

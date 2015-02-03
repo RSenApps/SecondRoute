@@ -4,6 +4,8 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
 
+import com.crashlytics.android.Crashlytics;
+
 public class SpeechService extends Service {
     GoogleSpeechRecognizer speechRecognizer;
     public SpeechService() {
@@ -11,6 +13,7 @@ public class SpeechService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        Crashlytics.start(this);
         speechRecognizer = new GoogleSpeechRecognizer(this);
         return super.onStartCommand(intent, flags, startId);
     }

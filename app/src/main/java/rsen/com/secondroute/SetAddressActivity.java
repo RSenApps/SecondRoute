@@ -21,6 +21,7 @@ import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.crashlytics.android.Crashlytics;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesClient;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -64,6 +65,7 @@ public class SetAddressActivity extends ActionBarActivity implements
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_set_address);
+        Crashlytics.start(this);
         home = getIntent().getBooleanExtra("home", true);
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         if (home)
