@@ -126,7 +126,7 @@ public class SetAddressActivity extends ActionBarActivity implements
                                 .commit();
 
                         startService(new Intent(SetAddressActivity.this, AddGeofencesService.class));
-
+                        finish();
                     }
                 }
             });
