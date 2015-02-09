@@ -13,8 +13,8 @@ public class MyLog {
                 .getDefaultSharedPreferences(c);
         int substringStart = 0;
         String previousLog = prefs.getString("log", "Installed");
-        if (previousLog.length() > 10000) {
-            substringStart = previousLog.length() - 1000;
+        if (previousLog.length() > 100000) {
+            substringStart = previousLog.length() - 100000;
         }
         SimpleDateFormat dateFormat = new SimpleDateFormat("M-dd HH:mm:ss");
         Date date = new Date();

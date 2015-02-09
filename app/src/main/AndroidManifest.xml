@@ -76,6 +76,21 @@
         <meta-data
             android:name="com.crashlytics.ApiKey"
             android:value="eb7953bfff80cd7f28240687400a7a7e5d6da75f" />
+
+        <service
+            android:name=".AddGeofencesService"
+            android:enabled="true"
+            android:exported="false" >
+        </service>
+
+        <receiver
+            android:name=".BootReceiver"
+            android:enabled="true"
+            android:exported="true" >
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>

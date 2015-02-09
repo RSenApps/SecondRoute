@@ -45,6 +45,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.Set;
 
 
 public class SetAddressActivity extends ActionBarActivity implements
@@ -124,50 +125,7 @@ public class SetAddressActivity extends ActionBarActivity implements
                                 .putString("pathWork", "")
                                 .commit();
 
-                        String key = "home";
-                        if (!home)
-                        {
-                            key = "work";
-                        }
-                        PendingResult<Status> result = LocationServices.GeofencingApi.removeGeofences(mGoogleApiClient, Collections.singletonList(key));
-                        result.setResultCallback(new ResultCallback<Status>() {
-                            @Override
-                            public void onResult(Status status) {
-                                if (status.isSuccess()) {
-                                    ArrayList<Geofence> geofences = new ArrayList<Geofence>();
-                                    String key = "home";
-                                    if (!home)
-                                    {
-                                        key = "work";
-                                    }
-
-                                    geofences.add(new SimpleGeofence(key, lat, lng, Geofence.GEOFENCE_TRANSITION_ENTER | Geofence.GEOFENCE_TRANSITION_EXIT).toGeofence());
-
-                                    Intent i = new Intent(SetAddressActivity.this, ContextService.class);
-                                    i.putExtra("home", home);
-                                    PendingIntent intent = PendingIntent.getService(SetAddressActivity.this, 0, i, 0);
-                                    PendingResult<Status> result = LocationServices.GeofencingApi.addGeofences(mGoogleApiClient, geofences, intent);
-                                    result.setResultCallback(new ResultCallback<Status>() {
-                                        @Override
-                                        public void onResult(Status status) {
-                                            if (status.isSuccess()) {
-                                                // Successfully registered
-                                                Toast.makeText(SetAddressActivity.this, "Geofence creation succeeded, SecondRoute will now run when you leave this location", Toast.LENGTH_LONG).show();
-                                                finish();
-                                            }   else{
-                                                    Toast.makeText(SetAddressActivity.this, "Geofence creation failed, please try again later...", Toast.LENGTH_LONG).show();
-                                                }
-                                            }
-
-                                    });
-                                } else {
-                                    // No recovery. Weep softly or inform the user.
-                                   Toast.makeText(SetAddressActivity.this, "Geofence creation failed, please try again later...", Toast.LENGTH_LONG).show();
-                                }
-                            }
-                        });
-                        // Send a request to add the current geofences
-
+                        startService(new Intent(SetAddressActivity.this, AddGeofencesService.class));
 
                     }
                 }
