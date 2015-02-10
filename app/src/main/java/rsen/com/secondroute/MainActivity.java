@@ -1,6 +1,8 @@
 package rsen.com.secondroute;
 
 import android.app.Activity;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -57,6 +59,14 @@ public class MainActivity extends ActionBarActivity {
                 Intent i = new Intent(MainActivity.this, SetAddressActivity.class);
                 i.putExtra("home", false);
                 startActivity(i);
+            }
+        });
+        findViewById(R.id.copylog).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+                ClipData clip = ClipData.newPlainText("label", MyLog.getLog(MainActivity.this));
+                clipboard.setPrimaryClip(clip);
             }
         });
         final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
