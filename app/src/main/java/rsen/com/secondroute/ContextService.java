@@ -36,9 +36,11 @@ public class ContextService extends ReceiveGeofenceTransitionService implements
     @Override
     public void onDestroy()
     {
-        stopActiveTracking();
-        mGoogleApiClient.disconnect();
-        mGoogleApiClient = null;
+        if (mGoogleApiClient != null) {
+            stopActiveTracking();
+            mGoogleApiClient.disconnect();
+            mGoogleApiClient = null;
+        }
         super.onDestroy();
     }
 
@@ -56,9 +58,7 @@ public class ContextService extends ReceiveGeofenceTransitionService implements
     protected void onEnteredGeofences(String[] geofenceIds) {
         Toast.makeText(this, "Geofence entered. Stopping background service...", Toast.LENGTH_SHORT).show();
         MyLog.l("Geofence entered. Stopping background service...", this);
-        if (mGoogleApiClient != null) {
-            stopActiveTracking();
-        }
+       stopSelf();
     }
 
     @Override
@@ -127,7 +127,6 @@ public class ContextService extends ReceiveGeofenceTransitionService implements
         }
         else {
             LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
-            stopSelf();
         }
     }
     @Override
@@ -168,7 +167,6 @@ public class ContextService extends ReceiveGeofenceTransitionService implements
         }
         else {
             LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
-            stopSelf();
         }
     }
 
