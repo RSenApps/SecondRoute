@@ -38,21 +38,15 @@ public class ContextService extends ReceiveGeofenceTransitionService implements
     {
         stopActiveTracking();
         mGoogleApiClient.disconnect();
+        mGoogleApiClient = null;
         super.onDestroy();
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId)
     {
-        currentLat = 0;
-        currentLng = 0;
-        lastRun = 0;
-        //isHeadingHome = !intent.getBooleanExtra("home", true); //exited home geofence
-        mGoogleApiClient = new GoogleApiClient.Builder(this)
-                .addApi(LocationServices.API)
-                .addConnectionCallbacks(this)
-                .addOnConnectionFailedListener(this)
-                .build();
+
+
         return super.onStartCommand(intent, flags, startId);
     }
 
@@ -62,7 +56,9 @@ public class ContextService extends ReceiveGeofenceTransitionService implements
     protected void onEnteredGeofences(String[] geofenceIds) {
         Toast.makeText(this, "Geofence entered. Stopping background service...", Toast.LENGTH_SHORT).show();
         MyLog.l("Geofence entered. Stopping background service...", this);
-        stopActiveTracking();
+        if (mGoogleApiClient != null) {
+            stopActiveTracking();
+        }
     }
 
     @Override
@@ -109,6 +105,17 @@ public class ContextService extends ReceiveGeofenceTransitionService implements
     boolean startOrStopTracking = true;
     public void startActiveTracking()
     {
+        if(mGoogleApiClient == null) {
+            currentLat = 0;
+            currentLng = 0;
+            lastRun = 0;
+            //isHeadingHome = !intent.getBooleanExtra("home", true); //exited home geofence
+            mGoogleApiClient = new GoogleApiClient.Builder(this)
+                    .addApi(LocationServices.API)
+                    .addConnectionCallbacks(this)
+                    .addOnConnectionFailedListener(this)
+                    .build();
+        }
         startOrStopTracking = true;
         mGoogleApiClient.connect();
     }
