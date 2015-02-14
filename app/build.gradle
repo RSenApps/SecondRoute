@@ -35,7 +35,7 @@ android {
     }
     buildTypes {
         release {
-            ext.betaDistributionEmails="ryanmsen@gmail.com"
+            ext.betaDistributionEmails="ryanmsen@gmail.com,john.wojciehowski@gmail.com"
             minifyEnabled false
             signingConfig signingConfigs.release
         }
