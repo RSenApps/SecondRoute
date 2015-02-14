@@ -82,7 +82,11 @@
             android:enabled="true"
             android:exported="false" >
         </service>
-
+        <service
+            android:name=".AnnounceETAService"
+            android:enabled="true"
+            android:exported="false" >
+        </service>
         <receiver
             android:name=".BootReceiver"
             android:enabled="true"

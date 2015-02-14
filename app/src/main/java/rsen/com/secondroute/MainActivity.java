@@ -14,6 +14,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.ScrollView;
 import android.widget.Scroller;
 import android.widget.SeekBar;
@@ -89,6 +91,14 @@ public class MainActivity extends ActionBarActivity {
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
 
+            }
+        });
+        final CheckBox announceETACheck = (CheckBox) findViewById(R.id.announceCheck);
+        announceETACheck.setChecked(prefs.getBoolean("announceETA", true));
+        announceETACheck.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                prefs.edit().putBoolean("announceETA", isChecked).apply();
             }
         });
     }

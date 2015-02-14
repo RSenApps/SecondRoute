@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.preference.PreferenceManager;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -85,6 +86,9 @@ public class ContextService extends ReceiveGeofenceTransitionService implements
         MyLog.l(message, this);
         // Check direction
         startActiveTracking();
+        if (PreferenceManager.getDefaultSharedPreferences(this).getBoolean("announceETA", true)) {
+            startService(new Intent(this, AnnounceETAService.class));
+        }
             /*
             Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
             if (location.hasAccuracy())
