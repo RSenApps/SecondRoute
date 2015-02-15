@@ -18,6 +18,7 @@ import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.TextView;
 
 import org.w3c.dom.Text;
@@ -37,6 +38,9 @@ public class FasterRouteActivity extends ActionBarActivity implements TextToSpee
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        getWindow().addFlags(
+                WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED|
+                WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
         setContentView(R.layout.activity_faster_route);
         instruction = getIntent().getStringExtra("instruction");
         int differenceInTime = getIntent().getIntExtra("differenceInTime", 0);

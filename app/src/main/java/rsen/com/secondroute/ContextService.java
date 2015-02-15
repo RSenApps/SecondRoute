@@ -29,6 +29,7 @@ public class ContextService extends ReceiveGeofenceTransitionService implements
     float currentLat = 0;
     float currentLng = 0;
     long lastRun = 0;
+    boolean needToAnnounceETA = false;
     public ContextService()
     {
         super();
@@ -64,7 +65,7 @@ public class ContextService extends ReceiveGeofenceTransitionService implements
 
     @Override
     protected void onExitedGeofences(String[] geofenceIds) {
-
+        needToAnnounceETA = true;
         isHeadingHome = false;
         for (int i = 0; i < geofenceIds.length; i++)
         {
@@ -86,9 +87,7 @@ public class ContextService extends ReceiveGeofenceTransitionService implements
         MyLog.l(message, this);
         // Check direction
         startActiveTracking();
-        if (PreferenceManager.getDefaultSharedPreferences(this).getBoolean("announceETA", true)) {
-            startService(new Intent(this, AnnounceETAService.class));
-        }
+
             /*
             Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
             if (location.hasAccuracy())
@@ -144,6 +143,16 @@ public class ContextService extends ReceiveGeofenceTransitionService implements
     {
         if (currentLat != 0 && currentLng != 0 && System.currentTimeMillis() - lastRun > 50000)
         {
+            if (needToAnnounceETA)
+            {
+                needToAnnounceETA = false;
+                if (PreferenceManager.getDefaultSharedPreferences(this).getBoolean("announceETA", true)) {
+                    Intent announceETA = new Intent(this, AnnounceETAService.class);
+                    announceETA.putExtra("lat", currentLat);
+                    announceETA.putExtra("lng", currentLng);
+                    startService(announceETA);
+                }
+            }
             lastRun = System.currentTimeMillis();
             Intent compareResults = new Intent(this, BackgroundService.class);
             compareResults.putExtra("lat", currentLat);

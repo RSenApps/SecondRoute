@@ -21,6 +21,10 @@ public class PlacesAutoCompleteAdapter extends ArrayAdapter<String> implements F
 
     @Override
     public int getCount() {
+        if (resultList == null)
+        {
+            return 0;
+        }
         return resultList.length;
     }
 

@@ -1,11 +1,15 @@
 package rsen.com.secondroute;
 
 import android.app.IntentService;
+import android.app.Service;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.AsyncTask;
 import android.os.Handler;
+import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.speech.tts.TextToSpeech;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.crashlytics.android.Crashlytics;
@@ -27,7 +31,7 @@ import java.util.Set;
  * TODO: Customize class - update intent actions, extra parameters and static
  * helper methods.
  */
-public class AnnounceETAService extends IntentService implements TextToSpeech.OnInitListener
+public class AnnounceETAService extends Service implements TextToSpeech.OnInitListener, TextToSpeech.OnUtteranceCompletedListener
 {
     Handler mHandler;
     private TextToSpeech tts;
@@ -41,6 +45,11 @@ public class AnnounceETAService extends IntentService implements TextToSpeech.On
     }
 
     @Override
+    public IBinder onBind(Intent intent) {
+        return null;
+    }
+
+    @Override
     public void onDestroy() {
         if (tts != null) {
             tts.stop();
@@ -49,14 +58,10 @@ public class AnnounceETAService extends IntentService implements TextToSpeech.On
         super.onDestroy();
     }
 
-    public AnnounceETAService()
-    {
-        super("AnnounceETAService");
-    }
-
     @Override
-    protected void onHandleIntent(Intent intent)
+    public int onStartCommand(Intent intent, int flags, int startId)
     {
+
         //perform all code here
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         float lat = prefs.getFloat("homelat", 0);
@@ -68,16 +73,43 @@ public class AnnounceETAService extends IntentService implements TextToSpeech.On
             lat = prefs.getFloat("worklat", 0);
             lng = prefs.getFloat("worklng", 0);
         }
-        ArrayList<Route> pr = BingMapsAPI.getDirectionsList(intent.getFloatExtra("lat", 0), intent.getFloatExtra("lng",0), lat, lng);
-        eta = pr.get(0).durationMinutes;
-        tts = new TextToSpeech(this, this);
+        Log.d("Announce", "Announce service started");
+        new LongOperation().execute(intent.getFloatExtra("lat", 0), intent.getFloatExtra("lng", 0), lat, lng);
+
+        return super.onStartCommand(intent, flags, startId);
+    }
+    private class LongOperation extends AsyncTask<Float, Void, Boolean> {
+
+        @Override
+        protected Boolean doInBackground(Float... params) {
+            ArrayList<Route> pr = BingMapsAPI.getDirectionsList(params[0], params[1], params[2], params[3]);
+            if (pr != null) {
+                eta = pr.get(0).durationMinutes;
+                Log.d("Announce", "Duration set");
+
+                return true;
+            }
+            return false;
+        }
+
+        @Override
+        protected void onPostExecute(Boolean result) {
+            if (result)
+            {
+                tts = new TextToSpeech(AnnounceETAService.this, AnnounceETAService.this);
+            }
+            else {
+                stopSelf();
+            }
+        }
 
     }
 
 
+
     @Override
     public void onInit(int status) {
-
+        Log.d("Announce", "Status:" + status);
         if (status == TextToSpeech.SUCCESS) {
 
             int result = tts.setLanguage(Locale.US);
@@ -85,7 +117,7 @@ public class AnnounceETAService extends IntentService implements TextToSpeech.On
             if (result == TextToSpeech.LANG_MISSING_DATA
                     || result == TextToSpeech.LANG_NOT_SUPPORTED) {
             } else {
-               // tts.setOnUtteranceCompletedListener(this);
+                tts.setOnUtteranceCompletedListener(this);
                 speakOut();
             }
 
@@ -93,14 +125,15 @@ public class AnnounceETAService extends IntentService implements TextToSpeech.On
         }
 
     }
-    /*
+
     public void onUtteranceCompleted(String utteranceId) {
-        startService(new Intent(this, SpeechService.class));
+        stopSelf();
     }
-    */
+
     private void speakOut() {
 
         HashMap<String, String> params = new HashMap<String, String>();
+        Log.d("Announce", "Speaking");
 
         params.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID,"stringId");
         tts.speak("Estimated time to " + place + " is " + eta + " minutes", TextToSpeech.QUEUE_FLUSH, params);
