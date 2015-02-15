@@ -10,6 +10,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBarActivity;
+import android.support.v7.widget.CardView;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -101,6 +102,7 @@ public class MainActivity extends ActionBarActivity {
                 prefs.edit().putBoolean("announceETA", isChecked).apply();
             }
         });
+
     }
 
     private void setupMaps() {
@@ -227,9 +229,26 @@ public class MainActivity extends ActionBarActivity {
     protected void onResume() {
         super.onResume();
         final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        ((TextView)findViewById(R.id.home_address)).setText(prefs.getString("home_address", "unset").split(",")[0]);
-        ((TextView)findViewById(R.id.work_address)).setText(prefs.getString("work_address", "unset").split(",")[0]);
+        ((TextView)findViewById(R.id.home_address)).setText(prefs.getString("home_address", "Tap to Set").split(",")[0]);
+        ((TextView)findViewById(R.id.work_address)).setText(prefs.getString("work_address", "Tap to Set").split(",")[0]);
         ((TextView)findViewById(R.id.log)).setText(MyLog.getLog(this));
+        if (prefs.getString("preferredRouteHome", "").equals("") || prefs.getString("preferredRouteWork", "").equals("")
+                || prefs.getString("pathHome", "").equals("") || prefs.getString("pathWork", "").equals(""))
+        {
+            //not configured
+            ((CardView) findViewById(R.id.configuredCard)).setCardBackgroundColor(getResources().getColor(R.color.not_configured));
+            ((TextView) findViewById(R.id.configuredTitle)).setText("Not Configured");
+            ((TextView) findViewById(R.id.configuredDetail)).setText("Finish setting up SecondRoute for it to run automatically");
+
+        }
+        else {
+            //configured
+            ((CardView) findViewById(R.id.configuredCard)).setCardBackgroundColor(getResources().getColor(R.color.configured));
+            ((TextView) findViewById(R.id.configuredTitle)).setText("Ready");
+
+            ((TextView) findViewById(R.id.configuredDetail)).setText("SecondRoute will start automatically when you leave your home/work");
+
+        }
         setupMaps();
         //((TextView)findViewById(R.id.preferred_route)).setText("Preferred Route to Work: " + prefs.getString("preferredRouteWork", "unset"));
         //((TextView)findViewById(R.id.preferred_route_home)).setText("Preferred Route to Home: " + prefs.getString("preferredRouteHome", "unset"));
