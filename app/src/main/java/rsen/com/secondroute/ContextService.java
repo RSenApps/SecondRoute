@@ -1,5 +1,6 @@
 package rsen.com.secondroute;
 
+import android.app.PendingIntent;
 import android.content.Intent;
 import android.location.Location;
 import android.os.Bundle;
@@ -9,6 +10,8 @@ import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.ActivityRecognition;
+import com.google.android.gms.location.ActivityRecognitionApi;
 import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
@@ -30,6 +33,7 @@ public class ContextService extends ReceiveGeofenceTransitionService implements
     float currentLng = 0;
     long lastRun = 0;
     boolean needToAnnounceETA = false;
+    public static boolean isDriving = true;
     public ContextService()
     {
         super();
@@ -67,6 +71,7 @@ public class ContextService extends ReceiveGeofenceTransitionService implements
     protected void onExitedGeofences(String[] geofenceIds) {
         needToAnnounceETA = true;
         isHeadingHome = false;
+        isDriving = true;
         for (int i = 0; i < geofenceIds.length; i++)
         {
             if (geofenceIds[i].toLowerCase().equals("work"))
@@ -115,6 +120,7 @@ public class ContextService extends ReceiveGeofenceTransitionService implements
             //isHeadingHome = !intent.getBooleanExtra("home", true); //exited home geofence
             mGoogleApiClient = new GoogleApiClient.Builder(this)
                     .addApi(LocationServices.API)
+                    .addApi(ActivityRecognition.API)
                     .addConnectionCallbacks(this)
                     .addOnConnectionFailedListener(this)
                     .build();
@@ -141,7 +147,11 @@ public class ContextService extends ReceiveGeofenceTransitionService implements
 
     private void startIntentService()
     {
-        if (currentLat != 0 && currentLng != 0 && System.currentTimeMillis() - lastRun > 50000)
+        if (!isDriving)
+        {
+            MyLog.l("Not starting service because user is not driving", this);
+        }
+        if (currentLat != 0 && currentLng != 0 && System.currentTimeMillis() - lastRun > 50000 && isDriving)
         {
             if (needToAnnounceETA)
             {
@@ -171,15 +181,20 @@ public class ContextService extends ReceiveGeofenceTransitionService implements
     }
     @Override
     public void onConnected(Bundle bundle) {
+        Intent intent = new Intent(this, ActivityRecognitionService.class);
+        PendingIntent callbackIntent = PendingIntent.getService(this, 0, intent,
+                PendingIntent.FLAG_UPDATE_CURRENT);
         if (startOrStopTracking) {
             LocationRequest mLocationRequest = LocationRequest.create();
             mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
             mLocationRequest.setInterval(60000); // Update location every second
 
             LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
+            ActivityRecognition.ActivityRecognitionApi.requestActivityUpdates(mGoogleApiClient, 120000, callbackIntent);
         }
         else {
             LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
+            ActivityRecognition.ActivityRecognitionApi.removeActivityUpdates(mGoogleApiClient, callbackIntent);
         }
     }
 
