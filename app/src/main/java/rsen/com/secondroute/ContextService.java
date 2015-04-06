@@ -33,7 +33,7 @@ public class ContextService extends ReceiveGeofenceTransitionService implements
     float currentLng = 0;
     long lastRun = 0;
     boolean needToAnnounceETA = false;
-    public boolean isDriving = true;
+    public boolean isDriving = false;
     public ContextService()
     {
         super();
@@ -55,7 +55,7 @@ public class ContextService extends ReceiveGeofenceTransitionService implements
     {
         if (intent != null && mGoogleApiClient != null) {
             if (intent.getBooleanExtra("drivingChange", false)) {
-                boolean newIsDriving = intent.getBooleanExtra("isdriving", true);
+                boolean newIsDriving = intent.getBooleanExtra("isdriving", false);
                 if (isDriving != newIsDriving) {
                     isDriving = newIsDriving;
                     if (newIsDriving) {
@@ -82,7 +82,6 @@ public class ContextService extends ReceiveGeofenceTransitionService implements
     protected void onExitedGeofences(String[] geofenceIds) {
         needToAnnounceETA = true;
         isHeadingHome = false;
-        isDriving = true;
         for (int i = 0; i < geofenceIds.length; i++)
         {
             if (geofenceIds[i].toLowerCase().equals("work"))
