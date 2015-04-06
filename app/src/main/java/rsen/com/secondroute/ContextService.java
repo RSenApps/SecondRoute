@@ -122,6 +122,7 @@ public class ContextService extends ReceiveGeofenceTransitionService implements
     }
     boolean startOrStopTracking = true;
     boolean keepActivityTrackingUnchanged = true;
+    boolean keepLocationTrackingUnchanged = false;
     public void startActiveTracking()
     {
         if(mGoogleApiClient == null) {
@@ -138,6 +139,7 @@ public class ContextService extends ReceiveGeofenceTransitionService implements
         }
         startOrStopTracking = true;
         keepActivityTrackingUnchanged = false;
+        keepLocationTrackingUnchanged = true;
         mGoogleApiClient.connect();
     }
 
@@ -145,6 +147,7 @@ public class ContextService extends ReceiveGeofenceTransitionService implements
     {
         startOrStopTracking = false;
         keepActivityTrackingUnchanged = true;
+        keepLocationTrackingUnchanged = false;
         if (!mGoogleApiClient.isConnected()) {
             mGoogleApiClient.connect();
         }
@@ -168,12 +171,14 @@ public class ContextService extends ReceiveGeofenceTransitionService implements
         }
         startOrStopTracking = true;
         keepActivityTrackingUnchanged = true;
+        keepLocationTrackingUnchanged = false;
         mGoogleApiClient.connect();
     }
     public void stopActiveTracking()
     {
         startOrStopTracking = false;
         keepActivityTrackingUnchanged = false;
+        keepLocationTrackingUnchanged = false;
         if (!mGoogleApiClient.isConnected()) {
             mGoogleApiClient.connect();
         }
@@ -232,11 +237,13 @@ public class ContextService extends ReceiveGeofenceTransitionService implements
         PendingIntent callbackIntent = PendingIntent.getService(this, 0, intent,
                 PendingIntent.FLAG_UPDATE_CURRENT);
         if (startOrStopTracking) {
-            LocationRequest mLocationRequest = LocationRequest.create();
-            mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-            mLocationRequest.setInterval(60000); // Update location every second
+            if (!keepLocationTrackingUnchanged) {
+                LocationRequest mLocationRequest = LocationRequest.create();
+                mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+                mLocationRequest.setInterval(60000); // Update location every second
 
-            LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
+                LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
+            }
             if (!keepActivityTrackingUnchanged) {
                 ActivityRecognition.ActivityRecognitionApi.requestActivityUpdates(mGoogleApiClient, 120000, callbackIntent);
             }
