@@ -53,14 +53,16 @@ public class ContextService extends ReceiveGeofenceTransitionService implements
     @Override
     public int onStartCommand(Intent intent, int flags, int startId)
     {
-        if (intent.getBooleanExtra("drivingChange", false)) {
-            boolean newIsDriving = intent.getBooleanExtra("isdriving", true);
-            if (isDriving != newIsDriving) {
-                isDriving = newIsDriving;
-                if (newIsDriving) {
-                    resumeLocationTracking();
-                } else {
-                    pauseLocationTracking();
+        if (intent != null && mGoogleApiClient != null) {
+            if (intent.getBooleanExtra("drivingChange", false)) {
+                boolean newIsDriving = intent.getBooleanExtra("isdriving", true);
+                if (isDriving != newIsDriving) {
+                    isDriving = newIsDriving;
+                    if (newIsDriving) {
+                        resumeLocationTracking();
+                    } else {
+                        pauseLocationTracking();
+                    }
                 }
             }
         }
