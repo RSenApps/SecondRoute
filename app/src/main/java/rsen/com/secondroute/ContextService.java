@@ -33,7 +33,7 @@ public class ContextService extends ReceiveGeofenceTransitionService implements
     float currentLng = 0;
     long lastRun = 0;
     boolean needToAnnounceETA = false;
-    public static boolean isDriving = true;
+    public boolean isDriving = true;
     public ContextService()
     {
         super();
@@ -53,7 +53,18 @@ public class ContextService extends ReceiveGeofenceTransitionService implements
     @Override
     public int onStartCommand(Intent intent, int flags, int startId)
     {
-
+        boolean newIsDriving = intent.getBooleanExtra("isdriving", true);
+        if (isDriving != newIsDriving)
+        {
+            isDriving = newIsDriving;
+            if (newIsDriving)
+            {
+                resumeLocationTracking();
+            }
+            else {
+                pauseLocationTracking();
+            }
+        }
 
         return super.onStartCommand(intent, flags, startId);
     }
@@ -111,6 +122,7 @@ public class ContextService extends ReceiveGeofenceTransitionService implements
 
     }
     boolean startOrStopTracking = true;
+    boolean keepActivityTrackingUnchanged = true;
     public void startActiveTracking()
     {
         if(mGoogleApiClient == null) {
@@ -126,16 +138,52 @@ public class ContextService extends ReceiveGeofenceTransitionService implements
                     .build();
         }
         startOrStopTracking = true;
+        keepActivityTrackingUnchanged = false;
         mGoogleApiClient.connect();
     }
-    public void stopActiveTracking()
+
+    public void pauseLocationTracking()
     {
         startOrStopTracking = false;
+        keepActivityTrackingUnchanged = true;
         if (!mGoogleApiClient.isConnected()) {
             mGoogleApiClient.connect();
         }
         else {
             LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
+        }
+    }
+    public void resumeLocationTracking()
+    {
+        if(mGoogleApiClient == null) {
+            currentLat = 0;
+            currentLng = 0;
+            lastRun = 0;
+            //isHeadingHome = !intent.getBooleanExtra("home", true); //exited home geofence
+            mGoogleApiClient = new GoogleApiClient.Builder(this)
+                    .addApi(LocationServices.API)
+                    .addApi(ActivityRecognition.API)
+                    .addConnectionCallbacks(this)
+                    .addOnConnectionFailedListener(this)
+                    .build();
+        }
+        startOrStopTracking = true;
+        keepActivityTrackingUnchanged = true;
+        mGoogleApiClient.connect();
+    }
+    public void stopActiveTracking()
+    {
+        startOrStopTracking = false;
+        keepActivityTrackingUnchanged = false;
+        if (!mGoogleApiClient.isConnected()) {
+            mGoogleApiClient.connect();
+        }
+        else {
+            LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
+            Intent intent = new Intent(this, ActivityRecognitionService.class);
+            PendingIntent callbackIntent = PendingIntent.getService(this, 0, intent,
+                    PendingIntent.FLAG_UPDATE_CURRENT);
+            ActivityRecognition.ActivityRecognitionApi.removeActivityUpdates(mGoogleApiClient, callbackIntent);
         }
     }
     @Override
@@ -190,11 +238,15 @@ public class ContextService extends ReceiveGeofenceTransitionService implements
             mLocationRequest.setInterval(60000); // Update location every second
 
             LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
-            ActivityRecognition.ActivityRecognitionApi.requestActivityUpdates(mGoogleApiClient, 120000, callbackIntent);
+            if (!keepActivityTrackingUnchanged) {
+                ActivityRecognition.ActivityRecognitionApi.requestActivityUpdates(mGoogleApiClient, 120000, callbackIntent);
+            }
         }
         else {
             LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
-            ActivityRecognition.ActivityRecognitionApi.removeActivityUpdates(mGoogleApiClient, callbackIntent);
+            if (!keepActivityTrackingUnchanged) {
+                ActivityRecognition.ActivityRecognitionApi.removeActivityUpdates(mGoogleApiClient, callbackIntent);
+            }
         }
     }
 

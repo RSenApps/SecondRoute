@@ -42,15 +42,15 @@ public class ActivityRecognitionService extends IntentService{
         if (ActivityRecognitionResult.hasResult(intent)) {
             ActivityRecognitionResult result = ActivityRecognitionResult.extractResult(intent);
             MyLog.l("Driving confidence: " + result.getActivityConfidence(DetectedActivity.IN_VEHICLE), this);
+            Intent i = new Intent(this, ContextService.class);
             if (result.getActivityConfidence(DetectedActivity.IN_VEHICLE) > 50)
             {
-                ContextService.isDriving = true;
+                i.putExtra("isdriving", true);
             }
             else {
-                ContextService.isDriving = false;
+                i.putExtra("isdriving", false);
             }
-
-// YOUR FUNKY CODE GOES HERE!
+            startService(i);
         }
     }
 
