@@ -34,6 +34,12 @@ public class ActivityRecognitionService extends IntentService{
         super("ActivityRecognitionService");
     }
 
+    @Override
+    public void onCreate() {
+        Crashlytics.start(this);
+        super.onCreate();
+    }
+
     /**
      * Google Play Services calls this once it has analysed the sensor data
      */
@@ -43,6 +49,7 @@ public class ActivityRecognitionService extends IntentService{
             ActivityRecognitionResult result = ActivityRecognitionResult.extractResult(intent);
             MyLog.l("Driving confidence: " + result.getActivityConfidence(DetectedActivity.IN_VEHICLE), this);
             Intent i = new Intent(this, ContextService.class);
+            i.putExtra("drivingChange", true);
             if (result.getActivityConfidence(DetectedActivity.IN_VEHICLE) > 50)
             {
                 i.putExtra("isdriving", true);

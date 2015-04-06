@@ -11,6 +11,7 @@ import android.preference.PreferenceManager;
 import android.widget.AutoCompleteTextView;
 import android.widget.Toast;
 
+import com.crashlytics.android.Crashlytics;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesClient;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -37,8 +38,11 @@ public class AddGeofencesService extends Service implements
     public AddGeofencesService() {
     }
 
+
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        Crashlytics.start(this);
+
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .addApi(LocationServices.API)
                 .addConnectionCallbacks(this)
