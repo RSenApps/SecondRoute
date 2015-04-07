@@ -172,7 +172,16 @@ public class ContextService extends ReceiveGeofenceTransitionService implements
         startOrStopTracking = true;
         keepActivityTrackingUnchanged = true;
         keepLocationTrackingUnchanged = false;
-        mGoogleApiClient.connect();
+        if (!mGoogleApiClient.isConnected()) {
+            mGoogleApiClient.connect();
+        }
+        else {
+                    LocationRequest mLocationRequest = LocationRequest.create();
+                    mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+                    mLocationRequest.setInterval(60000); // Update location every second
+
+                    LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
+        }
     }
     public void stopActiveTracking()
     {
