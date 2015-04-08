@@ -51,7 +51,7 @@ public class FasterRouteActivity extends ActionBarActivity implements TextToSpee
                         WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
         setContentView(R.layout.activity_faster_route);
         instruction = getIntent().getStringExtra("instruction");
-        LatLngBounds latLngBounds = (LatLngBounds) getIntent().getParcelableExtra("latlngbox");
+        final LatLngBounds latLngBounds = (LatLngBounds) getIntent().getParcelableExtra("latlngbox");
         ArrayList<LatLng> path = (ArrayList<LatLng>) getIntent().getSerializableExtra("path");
         int differenceInTime = getIntent().getIntExtra("differenceInTime", 0);
         instruction += " to save " + differenceInTime + " minutes.";
