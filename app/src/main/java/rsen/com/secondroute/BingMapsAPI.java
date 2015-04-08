@@ -57,7 +57,6 @@ public class BingMapsAPI {
             sb.append("&maxSolns=3");
 
             sb.append("&optmz=timeWithTraffic");
-            sb.append("&ra=routePath");
 
             URL url = new URL(sb.toString());
             conn = (HttpURLConnection) url.openConnection();
@@ -141,7 +140,7 @@ public class BingMapsAPI {
             sb.append("&wp.0=" + lat1 + "," + lng1);
             sb.append("&wp.1=" + lat2 + "," + lng2);
             sb.append("&maxSolns=3");
-
+            sb.append("&ra=routePath");
             sb.append("&optmz=timeWithTraffic");
 
             URL url = new URL(sb.toString());
