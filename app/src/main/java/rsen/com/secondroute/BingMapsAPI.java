@@ -57,7 +57,7 @@ public class BingMapsAPI {
             sb.append("&maxSolns=3");
 
             sb.append("&optmz=timeWithTraffic");
-            sb.append("&rpo=none");
+            sb.append("&ra=routePath");
 
             URL url = new URL(sb.toString());
             conn = (HttpURLConnection) url.openConnection();
@@ -182,10 +182,13 @@ public class BingMapsAPI {
                     {
                         instructions.add(instruction);
                     }
-                    JSONArray coordinates = itinerary.getJSONObject("maneuverPoint").getJSONArray("coordinates");
-                    path.add(new LatLng(coordinates.getDouble(0), coordinates.getDouble((1))));
-
-            }
+                }
+                JSONArray coordinates = resourceObj.getJSONObject("routePath").getJSONObject("line").getJSONArray("coordinates");
+                for (int index = 0; index < coordinates.length(); index++)
+                {
+                    JSONArray latlng = coordinates.getJSONArray(index);
+                    path.add(new LatLng(latlng.getDouble(0), latlng.getDouble((1))));
+                }
                 Route route = new Route();
                 route.instructions = instructions;
                 route.path = path;
