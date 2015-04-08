@@ -115,7 +115,8 @@ public class BackgroundService extends IntentService
     private double compareRoutes(List<String> _pr, List<String> _cr)
     {
         double matchpercentage = 0.0;
-        for(int i = 1; i <= Math.min(_pr.size(), _cr.size()) ; i++) // i starts at 0, ends at smaller number
+        //less than, not less than or equal to so as to ignore the first direction
+        for(int i = 1; i < Math.min(_pr.size(), _cr.size()) ; i++)
         {
             boolean match = true;
             List<String> preferredRouteWords = new ArrayList(Arrays.asList(_pr.get(_pr.size() - i).split(" ")));
@@ -143,7 +144,8 @@ public class BackgroundService extends IntentService
             else
             {
                 MyLog.l("Failed to match on: Preffered: " + _pr.get(_pr.size()-i) + " Current: " + _cr.get(_cr.size()-i), this);
-                return (matchpercentage+1) / Math.min(_pr.size(), _cr.size()); // Going to give it the last one because of different wording of directions (+1)
+                //avoid divide by zero error with Math.max
+                return (matchpercentage) / Math.max(Math.min(_pr.size(), _cr.size())-1, 1f); // Going to give it the last one because of different wording of directions (+1)
             }
         }
         return matchpercentage / Math.min(_pr.size(), _cr.size());
