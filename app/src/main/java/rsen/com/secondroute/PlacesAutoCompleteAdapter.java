@@ -7,6 +7,8 @@ import android.widget.Filterable;
 
 import com.google.android.gms.common.api.GoogleApiClient;
 
+import java.util.List;
+
 /**
  * Created by Ryan on 9/20/2014.
  */
@@ -45,17 +47,18 @@ public class PlacesAutoCompleteAdapter extends ArrayAdapter<String> implements F
                 FilterResults filterResults = new FilterResults();
                 if (constraint != null) {
                     // Retrieve the autocomplete results.
-                    resultList = GoogleMapsAPI.autocomplete(constraint.toString(), mLocationClient);
+                    String[][] tempResultList = GoogleMapsAPI.autocomplete(constraint.toString(), mLocationClient);
 
                     // Assign the data to the FilterResults
-                    filterResults.values = resultList;
-                    filterResults.count = resultList.length;
+                    filterResults.values = tempResultList;
+                    filterResults.count = tempResultList.length;
                 }
                 return filterResults;
             }
 
             @Override
             protected void publishResults(CharSequence constraint, FilterResults results) {
+                resultList = (String[][])results.values;
                 if (results != null && results.count > 0) {
                     notifyDataSetChanged();
                 } else {
