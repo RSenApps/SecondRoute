@@ -23,11 +23,19 @@ import android.widget.TextView;
 
 import org.w3c.dom.Text;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Locale;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
 import android.support.v4.app.NotificationCompat.WearableExtender;
+
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapFragment;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.PolylineOptions;
 
 
 public class FasterRouteActivity extends ActionBarActivity implements TextToSpeech.OnInitListener, TextToSpeech.OnUtteranceCompletedListener {
@@ -39,10 +47,12 @@ public class FasterRouteActivity extends ActionBarActivity implements TextToSpee
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         getWindow().addFlags(
-                WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED|
-                WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
+                WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED |
+                        WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
         setContentView(R.layout.activity_faster_route);
         instruction = getIntent().getStringExtra("instruction");
+        LatLngBounds latLngBounds = (LatLngBounds) getIntent().getParcelableExtra("latlngbox");
+        ArrayList<LatLng> path = (ArrayList<LatLng>) getIntent().getSerializableExtra("path");
         int differenceInTime = getIntent().getIntExtra("differenceInTime", 0);
         instruction += " to save " + differenceInTime + " minutes.";
         ((TextView) findViewById(R.id.instruction)).setText(instruction);
@@ -60,7 +70,21 @@ public class FasterRouteActivity extends ActionBarActivity implements TextToSpee
                 finish();
             }
         });
+        MapFragment mapFragment = ((MapFragment) getFragmentManager().findFragmentById(R.id.mapCard1));
 
+        final GoogleMap map = mapFragment.getMap();
+        map.setMyLocationEnabled(false);
+        map.setOnMapLoadedCallback  (new GoogleMap.OnMapLoadedCallback() {
+            @Override
+            public void onMapLoaded() {
+                map.moveCamera(CameraUpdateFactory.newLatLngBounds(latLngBounds, 100));
+            }
+        });
+        PolylineOptions rectOptions = new PolylineOptions();
+        rectOptions.color(getResources().getColor(android.R.color.holo_red_dark));
+        rectOptions.addAll(path);
+        rectOptions.width(20);
+        map.addPolyline(rectOptions);
         displayAndroidWearNotification();
         tts = new TextToSpeech(this, this);
 

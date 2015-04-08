@@ -79,7 +79,14 @@ public class BackgroundService extends IntentService
 
                     if (timeDifference >= minDifference) {
                         Intent i = new Intent(this, FasterRouteActivity.class);
-                        i.putExtra("instruction", pr.get(0).instructions.get(0));
+                        MyLog.l("Faster route found that is " + (routeWithMaxConfidence.durationMinutes - pr.get(0).durationMinutes) + " faster", this);
+                        for (String instruction : pr.get(0).instructions)
+                        {
+                            MyLog.l(instruction, this);
+                        }
+                        i.putExtra("instruction", pr.get(0).instructions.get(0) + " then " + pr.get(0).instructions.get(1));
+                        i.putExtra("path", pr.get(0).path);
+                        i.putExtra("latlngbox", pr.get(0).latLngBounds);
                         i.putExtra("differenceInTime", routeWithMaxConfidence.durationMinutes - pr.get(0).durationMinutes);
                         i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                         startActivity(i);
@@ -145,7 +152,7 @@ public class BackgroundService extends IntentService
             {
                 MyLog.l("Failed to match on: Preffered: " + _pr.get(_pr.size()-i) + " Current: " + _cr.get(_cr.size()-i), this);
                 //avoid divide by zero error with Math.max
-                return (matchpercentage) / Math.max(Math.min(_pr.size(), _cr.size())-1, 1f); // Going to give it the last one because of different wording of directions (+1)
+                return (matchpercentage) / Math.max(Math.min(_pr.size(), _cr.size()) - 1, 1f); // Going to give it the last one because of different wording of directions (+1)
             }
         }
         return matchpercentage / Math.min(_pr.size(), _cr.size());

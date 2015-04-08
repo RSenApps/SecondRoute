@@ -94,6 +94,14 @@ public class BingMapsAPI {
                     }
 
                 }
+                ArrayList<LatLng> path = new ArrayList<LatLng>();
+
+                JSONArray coordinates = resourceObj.getJSONObject("routePath").getJSONObject("line").getJSONArray("coordinates");
+                for (int index = 0; index < coordinates.length(); index++)
+                {
+                    JSONArray latlng = coordinates.getJSONArray(index);
+                    path.add(new LatLng(latlng.getDouble(0), latlng.getDouble((1))));
+                }
                 int duration = resourceObj.getInt("travelDurationTraffic");
                 String durationUnit = resourceObj.getString("durationUnit");
                 float divider = 1;
@@ -107,6 +115,7 @@ public class BingMapsAPI {
                 Route route = new Route();
                 route.durationMinutes = (int) Math.round((double) duration / divider);
                 route.instructions = instructionList;
+                route.path = path;
                 routesList.add(route);
 
             }
