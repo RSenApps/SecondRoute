@@ -82,7 +82,7 @@ public class AnnounceETAService extends Service implements TextToSpeech.OnInitLi
 
         @Override
         protected Boolean doInBackground(Float... params) {
-            ArrayList<Route> pr = BingMapsAPI.getDirectionsList(params[0], params[1], params[2], params[3]);
+            ArrayList<Route> pr = BingMapsAPI.getListOfPossibleRoutes(params[0], params[1], params[2], params[3]);
             if (pr != null) {
                 eta = pr.get(0).durationMinutes;
                 Log.d("Announce", "Duration set");

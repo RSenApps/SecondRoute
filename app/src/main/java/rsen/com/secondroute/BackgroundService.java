@@ -9,6 +9,7 @@ import android.preference.PreferenceManager;
 import android.widget.Toast;
 
 import com.crashlytics.android.Crashlytics;
+import com.google.android.gms.maps.model.LatLng;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -52,14 +53,14 @@ public class BackgroundService extends IntentService
             lat = prefs.getFloat("worklat", 0);
             lng = prefs.getFloat("worklng", 0);
         }
-        ArrayList<Route> pr = BingMapsAPI.getListOfPossibleRoutes(intent.getFloatExtra("lat", 0), intent.getFloatExtra("lng",0), lat, lng);
-        List<String> cr = (List<String>) BingMapsAPI.getPreferredDirectionsList(this, ContextService.isHeadingHome);
+        ArrayList<Route> pr = BingMapsAPI.getListOfPossibleRoutes(intent.getFloatExtra("lat", 0), intent.getFloatExtra("lng", 0), lat, lng);
+        List<LatLng> cr = (List<LatLng>) BingMapsAPI.getPreferredDirectionsList(this, ContextService.isHeadingHome);
         if (pr != null && cr != null) //no network or error in network
         {
             double maxConfidenceScore = 0;
             Route routeWithMaxConfidence = null;
             for (Route route : pr) {
-                double confidenceScore = compareRoutes(route.instructions, cr);
+                double confidenceScore = compareRoutes(route.maneuverPoints, cr);
                 MyLog.l("Route confidence: " + confidenceScore, this);
                 if (confidenceScore > maxConfidenceScore) {
                     maxConfidenceScore = confidenceScore;
@@ -69,7 +70,7 @@ public class BackgroundService extends IntentService
             MyLog.l("Max confidence (>.8): " + maxConfidenceScore, this);
 
             if (maxConfidenceScore >= .8) { //need to find match with original route, but also the fastest route can't be the original
-                final double similarityScore = compareRoutes(pr.get(0).instructions, cr);
+                final double similarityScore = compareRoutes(pr.get(0).maneuverPoints, cr);
                 MyLog.l("Similarity score (<.9): " + similarityScore, this);
 
                 if (similarityScore <= .9) {
@@ -114,59 +115,27 @@ public class BackgroundService extends IntentService
         }
     }
 
-    Set<String> ignoreWords = new HashSet<String>(Arrays.asList(
-            new String[]{"depart", "turn", "onto", "keep", "take" , "for", "at"}
-    ));
 
 
-    private double compareRoutes(List<String> _pr, List<String> _cr)
+    private double compareRoutes(List<LatLng> _pr, List<LatLng> _cr)
     {
         double matchpercentage = 0.0;
         //less than, not less than or equal to so as to ignore the first direction
-        for(int i = 1; i < Math.min(_pr.size(), _cr.size()) ; i++)
+        for(int i = Math.min(_pr.size(), _cr.size())-1; i >= 0  ; i--)
         {
-            boolean match = true;
-            List<String> preferredRouteWords = new ArrayList(Arrays.asList(_pr.get(_pr.size() - i).split(" ")));
-            List<String> currentRouteWords = new ArrayList(Arrays.asList(_cr.get(_cr.size() - i).split(" ")));
-           removeIgnoreWords(preferredRouteWords);
-            removeIgnoreWords(currentRouteWords);
-            if (preferredRouteWords.size() != currentRouteWords.size())
-            {
-                match = false;
-            }
-            else {
-                for (int w = 0; w < preferredRouteWords.size(); w++) {
+            LatLng preferredRouteManeuverPoint = _pr.get(i);
+            LatLng currentRouteManeuverPoint = _cr.get(i);
 
-                        if (!preferredRouteWords.get(w).toLowerCase().equals(currentRouteWords.get(w).toLowerCase())) {
-                            match = false;
-                            break;
-                        }
-
-                }
-            }
-            if(match)   // begins at end of list and minus i to iterate
+            if (Math.abs(preferredRouteManeuverPoint.latitude - currentRouteManeuverPoint.latitude) < .0001 && Math.abs(preferredRouteManeuverPoint.longitude - currentRouteManeuverPoint.longitude) < .0001 )
             {
                 matchpercentage++;
             }
             else
             {
                 MyLog.l("Failed to match on: Preffered: " + _pr.get(_pr.size()-i) + " Current: " + _cr.get(_cr.size()-i), this);
-                //avoid divide by zero error with Math.max
-                return (matchpercentage) / Math.max(Math.min(_pr.size(), _cr.size()) - 1, 1f); // Going to give it the last one because of different wording of directions (+1)
+                return (matchpercentage) / Math.min(_pr.size(), _cr.size());
             }
         }
         return matchpercentage / Math.min(_pr.size(), _cr.size());
-    }
-    private void removeIgnoreWords(List<String> words)
-    {
-        Iterator<String> prIterator = words.iterator();
-        while (prIterator.hasNext())
-        {
-            String word = prIterator.next();
-            if (ignoreWords.contains(word))
-            {
-                prIterator.remove();
-            }
-        }
     }
 }

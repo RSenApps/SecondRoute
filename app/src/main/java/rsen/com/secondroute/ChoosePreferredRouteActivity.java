@@ -58,13 +58,13 @@ public class ChoosePreferredRouteActivity extends ActionBarActivity {
                             } else {
                                 key = "Work";
                             }
-                            String instructionsString = "";
-                            for (String instruction : route.instructions)
+                            String maneuverPointsString = "";
+                            for (LatLng maneuverPoint : route.maneuverPoints)
                             {
-                                instructionsString += instruction + ";";
+                                maneuverPointsString += maneuverPoint.latitude + "," + maneuverPoint.longitude + ";";
                             }
-                            instructionsString = instructionsString.substring(0, instructionsString.length()-1);
-                            PreferenceManager.getDefaultSharedPreferences(ChoosePreferredRouteActivity.this).edit().putString("preferredRoute"+key, instructionsString).commit();
+                            maneuverPointsString = maneuverPointsString.substring(0, maneuverPointsString.length()-1);
+                            PreferenceManager.getDefaultSharedPreferences(ChoosePreferredRouteActivity.this).edit().putString("preferredRoute"+key, maneuverPointsString).commit();
                             String pathString = "";
                             for (LatLng path : route.path)
                             {

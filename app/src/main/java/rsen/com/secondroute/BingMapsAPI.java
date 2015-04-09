@@ -12,6 +12,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.InputStreamReader;
+import java.lang.reflect.Array;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.SimpleDateFormat;
@@ -31,7 +32,7 @@ public class BingMapsAPI {
     private static final String API_KEY = "AmXC0roDXBSoAn6AUz9ScsUWbYrvoqCvjerGZ-Q4O1KxFfea9AHCi3cZ8Prl5aIM";
 
     public enum TRANSIT_MODE {driving, transit, walking}
-    public static List<String> getPreferredDirectionsList(Context context, boolean home)
+    public static List<LatLng> getPreferredDirectionsList(Context context, boolean home)
     {
         String key = "preferredRoute";
         if (home)
@@ -42,7 +43,13 @@ public class BingMapsAPI {
             key += "Work";
         }
         String route = PreferenceManager.getDefaultSharedPreferences(context).getString(key, "");
-        return Arrays.asList(route.split(";"));
+        ArrayList<LatLng> maneuverPoints = new ArrayList<>();
+        for (String point : route.split(";"))
+        {
+            String[] latlng = route.split(",");
+            maneuverPoints.add(new LatLng(Double.valueOf(latlng[0]), Double.valueOf(latlng[1])));
+        }
+        return maneuverPoints;
     }
 
     public static ArrayList<Route> getListOfPossibleRoutes(Context context, boolean home)
@@ -101,13 +108,18 @@ public class BingMapsAPI {
                 JSONArray itineraryItems = resourceObj.getJSONArray("routeLegs").getJSONObject(0).getJSONArray("itineraryItems");
                 ArrayList<String> instructions = new ArrayList<String>();
                 ArrayList<LatLng> path = new ArrayList<LatLng>();
-
+                ArrayList<LatLng> maneuverPoints = new ArrayList<>();
                 for (int index = 0; index < itineraryItems.length(); index++) {
                     JSONObject itinerary = itineraryItems.getJSONObject(index);
                     String instruction = itinerary.getJSONObject("instruction").getString("text");
                     if (!instruction.toLowerCase().startsWith("road name changes"))
                     {
                         instructions.add(instruction);
+                    }
+                    String maneuverType = itinerary.getJSONObject("instruction").getString("maneuverType");
+                    if (!maneuverType.equals("DepartStart")) {
+                        JSONArray maneuverCoordinates = itinerary.getJSONObject("maneuverPoint").getJSONArray("coordinates");
+                        maneuverPoints.add(new LatLng(maneuverCoordinates.getDouble(0), maneuverCoordinates.getDouble(1)));
                     }
                 }
                 JSONArray coordinates = resourceObj.getJSONObject("routePath").getJSONObject("line").getJSONArray("coordinates");
@@ -129,6 +141,7 @@ public class BingMapsAPI {
                 Route route = new Route();
                 route.durationMinutes = (int) Math.round((double) duration / divider);
                 route.instructions = instructions;
+                route.maneuverPoints = maneuverPoints;
                 route.path = path;
                 route.latLngBounds = new LatLngBounds(new LatLng(bounds.getDouble(0), bounds.getDouble(1)), new LatLng(bounds.getDouble(2), bounds.getDouble(3)));
                 routesList.add(route);
