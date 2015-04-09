@@ -102,6 +102,14 @@ public class MainActivity extends ActionBarActivity {
                 prefs.edit().putBoolean("announceETA", isChecked).apply();
             }
         });
+        final CheckBox ignoreActivity = (CheckBox) findViewById(R.id.ignoreActivity);
+        ignoreActivity.setChecked(prefs.getBoolean("ignoreActivity", false));
+        ignoreActivity.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                prefs.edit().putBoolean("ignoreActivity", isChecked).apply();
+            }
+        });
 
     }
 

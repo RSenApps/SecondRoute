@@ -143,6 +143,12 @@ public class ContextService extends ReceiveGeofenceTransitionService implements
         startOrStopTracking = true;
         keepActivityTrackingUnchanged = false;
         keepLocationTrackingUnchanged = true;
+        if (PreferenceManager.getDefaultSharedPreferences(this).getBoolean("ignoreActivity", false))
+        {
+            keepActivityTrackingUnchanged = true;
+            keepLocationTrackingUnchanged = false;
+            isDriving = true;
+        }
         mGoogleApiClient.connect();
     }
 
@@ -175,6 +181,8 @@ public class ContextService extends ReceiveGeofenceTransitionService implements
         startOrStopTracking = true;
         keepActivityTrackingUnchanged = true;
         keepLocationTrackingUnchanged = false;
+
+
         if (!mGoogleApiClient.isConnected()) {
             mGoogleApiClient.connect();
         }
