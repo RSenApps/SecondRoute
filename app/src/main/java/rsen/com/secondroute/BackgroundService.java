@@ -121,10 +121,10 @@ public class BackgroundService extends IntentService
     {
         double matchpercentage = 0.0;
         //less than, not less than or equal to so as to ignore the first direction
-        for(int i = Math.min(_pr.size(), _cr.size())-1; i >= 0  ; i--)
+        for(int i = 1; i <= Math.min(_pr.size(), _cr.size())  ; i++)
         {
-            LatLng preferredRouteManeuverPoint = _pr.get(i);
-            LatLng currentRouteManeuverPoint = _cr.get(i);
+            LatLng preferredRouteManeuverPoint = _pr.get(_pr.size() - i);
+            LatLng currentRouteManeuverPoint = _cr.get(_cr.size() - i);
 
             if (Math.abs(preferredRouteManeuverPoint.latitude - currentRouteManeuverPoint.latitude) < .0001 && Math.abs(preferredRouteManeuverPoint.longitude - currentRouteManeuverPoint.longitude) < .0001 )
             {
@@ -132,7 +132,7 @@ public class BackgroundService extends IntentService
             }
             else
             {
-                MyLog.l("Failed to match on: Preffered: " + _pr.get(i) + " Current: " + _cr.get(i), this);
+                MyLog.l("Failed to match on: Preffered: " + _pr.get(_pr.size() - i) + " Current: " + _cr.get(_cr.size() - i), this);
                 return (matchpercentage) / Math.min(_pr.size(), _cr.size());
             }
         }
