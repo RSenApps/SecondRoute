@@ -46,7 +46,7 @@ public class BingMapsAPI {
         ArrayList<LatLng> maneuverPoints = new ArrayList<>();
         for (String point : route.split(";"))
         {
-            String[] latlng = route.split(",");
+            String[] latlng = point.split(",");
             maneuverPoints.add(new LatLng(Double.valueOf(latlng[0]), Double.valueOf(latlng[1])));
         }
         return maneuverPoints;
