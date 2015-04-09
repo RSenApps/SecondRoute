@@ -52,7 +52,7 @@ public class BackgroundService extends IntentService
             lat = prefs.getFloat("worklat", 0);
             lng = prefs.getFloat("worklng", 0);
         }
-        ArrayList<Route> pr = BingMapsAPI.getDirectionsList(intent.getFloatExtra("lat", 0), intent.getFloatExtra("lng",0), lat, lng);
+        ArrayList<Route> pr = BingMapsAPI.getListOfPossibleRoutes(intent.getFloatExtra("lat", 0), intent.getFloatExtra("lng",0), lat, lng);
         List<String> cr = (List<String>) BingMapsAPI.getPreferredDirectionsList(this, ContextService.isHeadingHome);
         if (pr != null && cr != null) //no network or error in network
         {

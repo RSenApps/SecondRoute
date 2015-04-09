@@ -257,7 +257,7 @@ public class ContextService extends ReceiveGeofenceTransitionService implements
                 LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
             }
             if (!keepActivityTrackingUnchanged) {
-                ActivityRecognition.ActivityRecognitionApi.requestActivityUpdates(mGoogleApiClient, 120000, callbackIntent);
+                ActivityRecognition.ActivityRecognitionApi.requestActivityUpdates(mGoogleApiClient, 60000, callbackIntent);
             }
         }
         else {

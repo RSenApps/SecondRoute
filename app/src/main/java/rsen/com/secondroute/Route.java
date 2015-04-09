@@ -12,6 +12,7 @@ import java.util.ArrayList;
 public class Route {
     public int durationMinutes;
     public ArrayList<String> instructions;
+    public ArrayList<LatLng> maneuverPoints;
     public ArrayList<LatLng> path;
     public LatLngBounds latLngBounds;
 }
