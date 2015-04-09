@@ -126,7 +126,7 @@ public class BackgroundService extends IntentService
             LatLng preferredRouteManeuverPoint = _pr.get(_pr.size() - i);
             LatLng currentRouteManeuverPoint = _cr.get(_cr.size() - i);
 
-            if (Math.abs(preferredRouteManeuverPoint.latitude - currentRouteManeuverPoint.latitude) < .0001 && Math.abs(preferredRouteManeuverPoint.longitude - currentRouteManeuverPoint.longitude) < .0001 )
+            if (Math.abs(preferredRouteManeuverPoint.latitude - currentRouteManeuverPoint.latitude) < .003 && Math.abs(preferredRouteManeuverPoint.longitude - currentRouteManeuverPoint.longitude) < .003 )
             {
                 matchpercentage++;
             }

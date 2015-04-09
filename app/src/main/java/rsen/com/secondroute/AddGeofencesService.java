@@ -146,7 +146,7 @@ public class AddGeofencesService extends Service implements
             this.mId = geofenceId;
             this.mLatitude = latitude;
             this.mLongitude = longitude;
-            this.mRadius = 500;
+            this.mRadius = 175;
             this.mExpirationDuration = Geofence.NEVER_EXPIRE;
             this.mTransitionType = transition;
         }
