@@ -73,8 +73,8 @@ public class AddGeofencesService extends Service implements
                         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(AddGeofencesService.this);
                         double lat = prefs.getFloat(geofenceKey + "lat", 0);
                         double lng = prefs.getFloat(geofenceKey + "lng", 0);
-
-                        geofences.add(new SimpleGeofence(geofenceKey, lat, lng, Geofence.GEOFENCE_TRANSITION_ENTER | Geofence.GEOFENCE_TRANSITION_EXIT).toGeofence());
+                        int radius = prefs.getInt(geofenceKey + "radius", 150);
+                        geofences.add(new SimpleGeofence(geofenceKey, lat, lng, radius, Geofence.GEOFENCE_TRANSITION_ENTER | Geofence.GEOFENCE_TRANSITION_EXIT).toGeofence());
                     }
                     Intent i = new Intent(AddGeofencesService.this, ContextService.class);
                     PendingIntent intent = PendingIntent.getService(AddGeofencesService.this, 0, i, 0);
@@ -141,12 +141,13 @@ public class AddGeofencesService extends Service implements
                 String geofenceId,
                 double latitude,
                 double longitude,
+                int radius,
                 int transition) {
             // Set the instance fields from the constructor
             this.mId = geofenceId;
             this.mLatitude = latitude;
             this.mLongitude = longitude;
-            this.mRadius = 175;
+            this.mRadius = radius;
             this.mExpirationDuration = Geofence.NEVER_EXPIRE;
             this.mTransitionType = transition;
         }

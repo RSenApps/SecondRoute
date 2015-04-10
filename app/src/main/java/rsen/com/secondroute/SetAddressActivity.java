@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
@@ -19,6 +20,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
+import android.widget.SeekBar;
 import android.widget.Toast;
 
 import com.crashlytics.android.Crashlytics;
@@ -36,6 +38,7 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
+import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
@@ -60,7 +63,10 @@ public class SetAddressActivity extends ActionBarActivity implements
     double lng = 0;
     private PendingIntent mGeofencePendingIntent;
     String placeName;
+    MarkerOptions markerOptions = new MarkerOptions();
+    CircleOptions circleOptions = new CircleOptions();
     boolean followUser;
+    long lastRedraw = 0;
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -68,19 +74,48 @@ public class SetAddressActivity extends ActionBarActivity implements
         setContentView(R.layout.activity_set_address);
         Crashlytics.start(this);
         home = getIntent().getBooleanExtra("home", true);
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        final SeekBar radiusSeekBar = (SeekBar) findViewById(R.id.geofenceSize);
+
         if (home)
         {
             placeName = prefs.getString("home_address", "");
             lat = prefs.getFloat("homelat", 0);
             lng = prefs.getFloat("homelng", 0);
+            radiusSeekBar.setProgress(prefs.getInt("homeradius", 75));
         }
         else
         {
             placeName = prefs.getString("work_address", "");
             lat = prefs.getFloat("worklat", 0);
             lng = prefs.getFloat("worklng", 0);
+            radiusSeekBar.setProgress(prefs.getInt("workradius", 150));
+
         }
+        circleOptions.strokeColor(Color.TRANSPARENT);
+        circleOptions.fillColor(Color.argb(150 ,244, 67, 54));
+        circleOptions.radius(radiusSeekBar.getProgress());
+        radiusSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+
+                circleOptions.radius(progress);
+                if (System.currentTimeMillis() - lastRedraw > 100) {
+                    lastRedraw = System.currentTimeMillis();
+                    redrawMapOverlay();
+                }
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
         final AutoCompleteTextView autoCompView = (AutoCompleteTextView) findViewById(R.id.location_input);
         autoCompView.setText(placeName);
         if (GoogleMapsAPI.servicesConnected(this))
@@ -111,19 +146,21 @@ public class SetAddressActivity extends ActionBarActivity implements
                         {
                             prefs.edit().putFloat("homelat", (float) lat)
                                     .putFloat("homelng", (float) lng)
+                                    .putInt("homeradius", (int) circleOptions.getRadius())
                                     .putString("home_address", placeName).commit();
 
                         }
                         else {
                             prefs.edit().putFloat("worklat", (float) lat)
                                     .putFloat("worklng", (float) lng)
+                                    .putInt("workradius", (int) circleOptions.getRadius())
                                     .putString("work_address", placeName).commit();
                         }
                         prefs.edit().putString("preferredRouteHome", "")
                                 .putString("preferredRouteWork", "")
                                 .putString("pathHome", "")
                                 .putString("pathWork", "")
-                                .commit();
+                                .apply();
 
                         startService(new Intent(SetAddressActivity.this, AddGeofencesService.class));
                         finish();
@@ -167,9 +204,10 @@ public class SetAddressActivity extends ActionBarActivity implements
         }
         else {
             map.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(lat, lng)));
-            MarkerOptions options = new MarkerOptions();
-            options.position(new LatLng(lat, lng));
-            map.addMarker(options);
+
+            markerOptions.position(new LatLng(lat, lng));
+            redrawMapOverlay();
+
         }
         // Zoom in the Google Map
         map.animateCamera(CameraUpdateFactory.zoomTo(12));
@@ -183,14 +221,12 @@ public class SetAddressActivity extends ActionBarActivity implements
                 final Handler handler = new Handler(new Handler.Callback() {
                     @Override
                     public boolean handleMessage(Message message) {
-                        map.clear();
                         // Zoom in the Google Map
                         map.animateCamera(CameraUpdateFactory.newLatLngZoom((LatLng) message.obj, 15));
-                        MarkerOptions options = new MarkerOptions();
-                        options.position((LatLng) message.obj);
-                        options.title(adapter.getItem(i));
+                        markerOptions.position((LatLng) message.obj);
+                        markerOptions.title(adapter.getItem(i));
                         placeName = adapter.getItem(i);
-                        map.addMarker(options);
+                        redrawMapOverlay();
                         return true;
                     }
                 });
@@ -277,88 +313,21 @@ public class SetAddressActivity extends ActionBarActivity implements
         lat = latLng.latitude;
         lng = latLng.longitude;
         map.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15));
-        map.clear();
-        MarkerOptions options = new MarkerOptions();
-        options.position(latLng);
-        placeName = lat + ", " + lng;
-        map.addMarker(options);
+        markerOptions.position(latLng);
+        placeName = (double)Math.round(lat * 100000) / 100000 + ", " + (double)Math.round(lng * 100000) / 100000; //roudn to 5 digits
+        redrawMapOverlay();
         final AutoCompleteTextView autoCompView = (AutoCompleteTextView) findViewById(R.id.location_input);
         autoCompView.setText(placeName);
     }
-
-    /**
-     * A single Geofence object, defined by its center and radius.
-     */
-    public class SimpleGeofence
+    private void redrawMapOverlay()
     {
-        // Instance variables
-        private final String mId;
-        private final double mLatitude;
-        private final double mLongitude;
-        private final float mRadius;
-        private long mExpirationDuration;
-        private int mTransitionType;
+        map.clear();
+        map.addMarker(markerOptions);
+        circleOptions.center(markerOptions.getPosition());
 
-        /**
-         * @param geofenceId The Geofence's request ID
-         * @param latitude Latitude of the Geofence's center.
-         * @param longitude Longitude of the Geofence's center.
-         * @param transition Type of Geofence transition.
-         */
-        public SimpleGeofence(
-                String geofenceId,
-                double latitude,
-                double longitude,
-                int transition) {
-            // Set the instance fields from the constructor
-            this.mId = geofenceId;
-            this.mLatitude = latitude;
-            this.mLongitude = longitude;
-            this.mRadius = 500;
-            this.mExpirationDuration = Geofence.NEVER_EXPIRE;
-            this.mTransitionType = transition;
-        }
-        // Instance field getters
-        public String getId()
-        {
-            return mId;
-        }
-        public double getLatitude()
-        {
-            return mLatitude;
-        }
-        public double getLongitude()
-        {
-            return mLongitude;
-        }
-        public float getRadius()
-        {
-            return mRadius;
-        }
-        public long getExpirationDuration()
-        {
-            return mExpirationDuration;
-        }
-        public int getTransitionType()
-        {
-            return mTransitionType;
-        }
-        /**
-         * Creates a Location Services Geofence object from a
-         * SimpleGeofence.
-         *
-         * @return A Geofence object
-         */
-        public Geofence toGeofence()
-        {
-            // Build a new Geofence object
-            return new Geofence.Builder()
-                    .setRequestId(getId())
-                    .setTransitionTypes(mTransitionType)
-                    .setCircularRegion(
-                            getLatitude(), getLongitude(), getRadius())
-                    .setExpirationDuration(mExpirationDuration)
-                    .build();
-        }
+        map.addCircle(circleOptions);
     }
+
+
+
 }
