@@ -9,6 +9,7 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.graphics.LightingColorFilter;
 import android.graphics.PorterDuff;
+import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -48,7 +49,7 @@ public class FasterRouteActivity extends ActionBarActivity implements TextToSpee
         super.onCreate(savedInstanceState);
         getWindow().addFlags(
                 WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED |
-                        WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
+                        WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON | WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         setContentView(R.layout.activity_faster_route);
         instruction = getIntent().getStringExtra("instruction");
         final LatLngBounds latLngBounds = (LatLngBounds) getIntent().getParcelableExtra("latlngbox");
@@ -88,20 +89,26 @@ public class FasterRouteActivity extends ActionBarActivity implements TextToSpee
         displayAndroidWearNotification();
         tts = new TextToSpeech(this, this);
 
-
+        LocalBroadcastManager.getInstance(this).registerReceiver(broadcastReceiver,
+                new IntentFilter("speech-return"));
 
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        LocalBroadcastManager.getInstance(this).registerReceiver(broadcastReceiver,
-                new IntentFilter("speech-return"));
+
     }
 
     @Override
     protected void onPause() {
         super.onPause();
+
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
         LocalBroadcastManager.getInstance(this).unregisterReceiver(broadcastReceiver);
         if (tts != null) {
             tts.stop();
@@ -192,6 +199,10 @@ public class FasterRouteActivity extends ActionBarActivity implements TextToSpee
         startService(new Intent(this, SpeechService.class));
     }
     private void speakOut() {
+        AudioManager audioManager =
+                (AudioManager)getSystemService(Context.AUDIO_SERVICE);
+
+        audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, PreferenceManager.getDefaultSharedPreferences(this).getInt("volume", (int)((double)audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)/4*3)), 0);
 
         HashMap<String, String> params = new HashMap<String, String>();
 

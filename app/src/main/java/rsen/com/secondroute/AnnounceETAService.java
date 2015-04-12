@@ -2,8 +2,10 @@ package rsen.com.secondroute;
 
 import android.app.IntentService;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.media.AudioManager;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.IBinder;
@@ -96,6 +98,11 @@ public class AnnounceETAService extends Service implements TextToSpeech.OnInitLi
         protected void onPostExecute(Boolean result) {
             if (result)
             {
+                AudioManager audioManager =
+                        (AudioManager)getSystemService(Context.AUDIO_SERVICE);
+
+                audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, PreferenceManager.getDefaultSharedPreferences(AnnounceETAService.this).getInt("volume", (int) ((double) audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC) / 4 * 3)), 0);
+
                 tts = new TextToSpeech(AnnounceETAService.this, AnnounceETAService.this);
             }
             else {

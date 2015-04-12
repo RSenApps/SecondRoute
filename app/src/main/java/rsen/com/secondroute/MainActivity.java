@@ -3,8 +3,10 @@ package rsen.com.secondroute;
 import android.app.Activity;
 import android.content.ClipData;
 import android.content.ClipboardManager;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.media.AudioManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -93,6 +95,28 @@ public class MainActivity extends ActionBarActivity {
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
 
+            }
+        });
+        final AudioManager audioManager =
+                (AudioManager)getSystemService(Context.AUDIO_SERVICE);
+        SeekBar volume = ((SeekBar) findViewById(R.id.volume));
+        volume.setProgress(prefs.getInt("volume", (int)((double)audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)/4*3)));
+        volume.setMax(audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC));
+        volume.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                prefs.edit().putInt("volume", seekBar.getProgress()).apply();
+                audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, seekBar.getProgress(), AudioManager.FLAG_PLAY_SOUND);
             }
         });
         final CheckBox announceETACheck = (CheckBox) findViewById(R.id.announceCheck);
@@ -241,15 +265,17 @@ public class MainActivity extends ActionBarActivity {
         ((TextView)findViewById(R.id.home_address)).setText(prefs.getString("home_address", "Tap to Set").split(",")[0]);
         ((TextView)findViewById(R.id.work_address)).setText(prefs.getString("work_address", "Tap to Set").split(",")[0]);
         ((TextView)findViewById(R.id.log)).setText(MyLog.getLog(this));
-        Switch enableSwitch = (Switch) findViewById(R.id.enableSwitch);
+        final Switch enableSwitch = (Switch) findViewById(R.id.enableSwitch);
         enableSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                prefs.edit().putBoolean("enabled", isChecked).commit();
-                refreshEnabledState();
-                startService(new Intent(MainActivity.this, AddGeofencesService.class));
-                if (!isChecked) {
-                    stopService(new Intent(MainActivity.this, ContextService.class));
+                if(enableSwitch.isEnabled()) {
+                    prefs.edit().putBoolean("enabled", isChecked).commit();
+                    refreshEnabledState();
+                    startService(new Intent(MainActivity.this, AddGeofencesService.class));
+                    if (!isChecked) {
+                        stopService(new Intent(MainActivity.this, ContextService.class));
+                    }
                 }
             }
         });
@@ -287,6 +313,7 @@ public class MainActivity extends ActionBarActivity {
     {
         final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         Switch enableSwitch = (Switch) findViewById(R.id.enableSwitch);
+        enableSwitch.setEnabled(false);
         if (prefs.getString("preferredRouteHome", "").equals("") || prefs.getString("preferredRouteWork", "").equals("")
                 || prefs.getString("pathHome", "").equals("") || prefs.getString("pathWork", "").equals(""))
         {
@@ -294,8 +321,8 @@ public class MainActivity extends ActionBarActivity {
             ((CardView) findViewById(R.id.configuredCard)).setCardBackgroundColor(getResources().getColor(R.color.not_configured));
             ((TextView) findViewById(R.id.configuredTitle)).setText("Not Configured");
             ((TextView) findViewById(R.id.configuredDetail)).setText("Finish setting up SecondRoute for it to run automatically");
-            enableSwitch.setChecked(false);
             enableSwitch.setEnabled(false);
+            enableSwitch.setChecked(false);
         }
         else if (prefs.getBoolean("enabled", true)) {
             //configured
