@@ -77,6 +77,7 @@ public class MainActivity extends ActionBarActivity {
                 Intent emailIntent = new Intent(Intent.ACTION_SENDTO, Uri.fromParts(
                         "mailto", "rsenapps+secondroute@gmail.com", null));
                 emailIntent.putExtra(Intent.EXTRA_SUBJECT, "SecondRoute Log");
+                emailIntent.putExtra(Intent.EXTRA_TEXT, MyLog.getLog(MainActivity.this));
                 startActivity(Intent.createChooser(emailIntent, "Send email..."));
             }
         });
