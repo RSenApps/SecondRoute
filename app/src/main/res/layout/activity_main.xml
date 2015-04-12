@@ -346,7 +346,7 @@
             <Button
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Copy Log"
+                android:text="Email Log"
                 android:id="@+id/copylog" />
             <CheckBox
                 android:layout_width="match_parent"

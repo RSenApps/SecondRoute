@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.media.AudioManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -73,6 +74,10 @@ public class MainActivity extends ActionBarActivity {
                 ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
                 ClipData clip = ClipData.newPlainText("label", MyLog.getLog(MainActivity.this));
                 clipboard.setPrimaryClip(clip);
+                Intent emailIntent = new Intent(Intent.ACTION_SENDTO, Uri.fromParts(
+                        "mailto", "rsenapps+secondroute@gmail.com", null));
+                emailIntent.putExtra(Intent.EXTRA_SUBJECT, "SecondRoute Log");
+                startActivity(Intent.createChooser(emailIntent, "Send email..."));
             }
         });
         final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
