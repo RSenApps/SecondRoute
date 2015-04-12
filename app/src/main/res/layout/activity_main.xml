@@ -48,6 +48,14 @@
                         android:text="Finish setting up SecondRoute for it to run automatically"
                         android:id="@+id/configuredDetail" />
 
+                    <Switch
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/enableSwitch"
+                        android:layout_alignParentTop="true"
+                        android:layout_alignParentRight="true"
+                        android:layout_alignParentEnd="true" />
+
                 </RelativeLayout>
 
 

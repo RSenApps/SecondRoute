@@ -66,11 +66,12 @@ public class AddGeofencesService extends Service implements
         result.setResultCallback(new ResultCallback<Status>() {
             @Override
             public void onResult(Status status) {
-                if (status.isSuccess()) {
+                SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(AddGeofencesService.this);
+
+                if (status.isSuccess() && prefs.getBoolean("enabled", true)) {
 
                     ArrayList<Geofence> geofences = new ArrayList<Geofence>();
                     for (String geofenceKey : geofenceKeys) {
-                        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(AddGeofencesService.this);
                         double lat = prefs.getFloat(geofenceKey + "lat", 0);
                         double lng = prefs.getFloat(geofenceKey + "lng", 0);
                         int radius = prefs.getInt(geofenceKey + "radius", 150);
@@ -84,17 +85,18 @@ public class AddGeofencesService extends Service implements
                         public void onResult(Status status) {
                             if (status.isSuccess()) {
                                 // Successfully registered
-                                Toast.makeText(AddGeofencesService.this, "Geofence creation succeeded, SecondRoute will now run when you leave this location", Toast.LENGTH_LONG).show();
+                                //Toast.makeText(AddGeofencesService.this, "Geofence creation succeeded, SecondRoute will now run when you leave this location", Toast.LENGTH_LONG).show();
                                 stopSelf();
                             }   else{
-                                Toast.makeText(AddGeofencesService.this, "Geofence creation failed, please try again later...", Toast.LENGTH_LONG).show();
+                               //Toast.makeText(AddGeofencesService.this, "Geofence creation failed, please try again later...", Toast.LENGTH_LONG).show();
                             }
                         }
 
                     });
                 } else {
                     // No recovery. Weep softly or inform the user.
-                    Toast.makeText(AddGeofencesService.this, "Geofence creation failed, please try again later...", Toast.LENGTH_LONG).show();
+                    //Toast.makeText(AddGeofencesService.this, "Geofences deleted...", Toast.LENGTH_LONG).show();
+
                 }
             }
         });

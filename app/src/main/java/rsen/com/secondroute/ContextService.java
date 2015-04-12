@@ -76,7 +76,7 @@ public class ContextService extends ReceiveGeofenceTransitionService implements
 
     @Override
     protected void onEnteredGeofences(String[] geofenceIds) {
-        Toast.makeText(this, "Geofence entered. Stopping background service...", Toast.LENGTH_SHORT).show();
+        //Toast.makeText(this, "Geofence entered. Stopping background service...", Toast.LENGTH_SHORT).show();
         MyLog.l("Geofence entered. Stopping background service...", this);
        stopSelf();
     }
@@ -101,7 +101,7 @@ public class ContextService extends ReceiveGeofenceTransitionService implements
         else {
             message += "home";
         }
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+        //Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
         MyLog.l(message, this);
         // Check direction
         startActiveTracking();

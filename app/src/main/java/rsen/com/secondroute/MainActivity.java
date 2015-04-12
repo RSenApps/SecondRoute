@@ -20,6 +20,7 @@ import android.widget.CompoundButton;
 import android.widget.ScrollView;
 import android.widget.Scroller;
 import android.widget.SeekBar;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -240,23 +241,19 @@ public class MainActivity extends ActionBarActivity {
         ((TextView)findViewById(R.id.home_address)).setText(prefs.getString("home_address", "Tap to Set").split(",")[0]);
         ((TextView)findViewById(R.id.work_address)).setText(prefs.getString("work_address", "Tap to Set").split(",")[0]);
         ((TextView)findViewById(R.id.log)).setText(MyLog.getLog(this));
-        if (prefs.getString("preferredRouteHome", "").equals("") || prefs.getString("preferredRouteWork", "").equals("")
-                || prefs.getString("pathHome", "").equals("") || prefs.getString("pathWork", "").equals(""))
-        {
-            //not configured
-            ((CardView) findViewById(R.id.configuredCard)).setCardBackgroundColor(getResources().getColor(R.color.not_configured));
-            ((TextView) findViewById(R.id.configuredTitle)).setText("Not Configured");
-            ((TextView) findViewById(R.id.configuredDetail)).setText("Finish setting up SecondRoute for it to run automatically");
-
-        }
-        else {
-            //configured
-            ((CardView) findViewById(R.id.configuredCard)).setCardBackgroundColor(getResources().getColor(R.color.configured));
-            ((TextView) findViewById(R.id.configuredTitle)).setText("Ready");
-
-            ((TextView) findViewById(R.id.configuredDetail)).setText("SecondRoute will start automatically when you leave your home/work");
-
-        }
+        Switch enableSwitch = (Switch) findViewById(R.id.enableSwitch);
+        enableSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                prefs.edit().putBoolean("enabled", isChecked).commit();
+                refreshEnabledState();
+                startService(new Intent(MainActivity.this, AddGeofencesService.class));
+                if (!isChecked) {
+                    stopService(new Intent(MainActivity.this, ContextService.class));
+                }
+            }
+        });
+        refreshEnabledState();
         setupMaps();
         //((TextView)findViewById(R.id.preferred_route)).setText("Preferred Route to Work: " + prefs.getString("preferredRouteWork", "unset"));
         //((TextView)findViewById(R.id.preferred_route_home)).setText("Preferred Route to Home: " + prefs.getString("preferredRouteHome", "unset"));
@@ -285,5 +282,36 @@ public class MainActivity extends ActionBarActivity {
 
 
 
+    }
+    private void refreshEnabledState()
+    {
+        final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        Switch enableSwitch = (Switch) findViewById(R.id.enableSwitch);
+        if (prefs.getString("preferredRouteHome", "").equals("") || prefs.getString("preferredRouteWork", "").equals("")
+                || prefs.getString("pathHome", "").equals("") || prefs.getString("pathWork", "").equals(""))
+        {
+            //not configured
+            ((CardView) findViewById(R.id.configuredCard)).setCardBackgroundColor(getResources().getColor(R.color.not_configured));
+            ((TextView) findViewById(R.id.configuredTitle)).setText("Not Configured");
+            ((TextView) findViewById(R.id.configuredDetail)).setText("Finish setting up SecondRoute for it to run automatically");
+            enableSwitch.setChecked(false);
+            enableSwitch.setEnabled(false);
+        }
+        else if (prefs.getBoolean("enabled", true)) {
+            //configured
+            ((CardView) findViewById(R.id.configuredCard)).setCardBackgroundColor(getResources().getColor(R.color.configured));
+            ((TextView) findViewById(R.id.configuredTitle)).setText("Ready");
+
+            ((TextView) findViewById(R.id.configuredDetail)).setText("SecondRoute will start automatically when you leave your home/work");
+            enableSwitch.setChecked(true);
+            enableSwitch.setEnabled(true);
+        }
+        else {
+            ((CardView) findViewById(R.id.configuredCard)).setCardBackgroundColor(getResources().getColor(R.color.not_configured));
+            ((TextView) findViewById(R.id.configuredTitle)).setText("Disabled");
+            ((TextView) findViewById(R.id.configuredDetail)).setText("SecondRoute will not monitor traffic until reenabled");
+            enableSwitch.setChecked(false);
+            enableSwitch.setEnabled(true);
+        }
     }
 }
