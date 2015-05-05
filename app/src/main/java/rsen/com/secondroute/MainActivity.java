@@ -85,7 +85,7 @@ public class MainActivity extends ActionBarActivity {
         SeekBar minDifference = ((SeekBar) findViewById(R.id.minDifference));
         final TextView minDifferenceDisplay = (TextView) findViewById(R.id.minDifferenceDisplay);
         minDifference.setProgress(prefs.getInt("minDifference", 5) - 2);
-        minDifferenceDisplay.setText("" + prefs.getInt("minDifference", 5));
+        minDifferenceDisplay.setText("" + prefs.getInt("minDifference", 5) + " min");
         minDifference.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
